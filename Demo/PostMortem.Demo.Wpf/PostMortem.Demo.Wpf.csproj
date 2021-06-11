@@ -1,0 +1,21 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net5.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="NLog.Extensions.Logging" Version="1.7.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\PostMortem.Logging\PostMortem.Logging.csproj" />
+    <ProjectReference Include="..\..\PostMortem.Windows.Screenshots\PostMortem.Windows.Screenshots.csproj" />
+    <ProjectReference Include="..\..\PostMortem.Windows.Wpf\PostMortem.Windows.Wpf.csproj" />
+    <ProjectReference Include="..\..\PostMortem.Windows\PostMortem.Windows.csproj" />
+    <ProjectReference Include="..\..\PostMortem\PostMortem.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,60 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.31313.79
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PostMortem", "PostMortem\PostMortem.csproj", "{05942D01-CB5D-47E2-9557-C2761C6C5A9B}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PostMortem.Windows", "PostMortem.Windows\PostMortem.Windows.csproj", "{AE7C2454-436A-4D4F-9D64-34740A71300C}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Demo", "Demo", "{4AB7E2A0-8D84-415F-BA78-AA984F21ABC6}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PostMortem.Demo.Wpf", "Demo\PostMortem.Demo.Wpf\PostMortem.Demo.Wpf.csproj", "{6DE84F19-1E81-47D1-85A5-151A8BB039C1}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PostMortem.Windows.Screenshots", "PostMortem.Windows.Screenshots\PostMortem.Windows.Screenshots.csproj", "{F2542F92-8829-430D-94E7-08284A66E136}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PostMortem.Windows.Wpf", "PostMortem.Windows.Wpf\PostMortem.Windows.Wpf.csproj", "{E3C7E270-337C-40A8-B7C2-17C700F822B5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PostMortem.Logging", "PostMortem.Logging\PostMortem.Logging.csproj", "{09648539-80EE-44B5-8AA0-B2493E13A0DD}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{05942D01-CB5D-47E2-9557-C2761C6C5A9B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{05942D01-CB5D-47E2-9557-C2761C6C5A9B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{05942D01-CB5D-47E2-9557-C2761C6C5A9B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{05942D01-CB5D-47E2-9557-C2761C6C5A9B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AE7C2454-436A-4D4F-9D64-34740A71300C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AE7C2454-436A-4D4F-9D64-34740A71300C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AE7C2454-436A-4D4F-9D64-34740A71300C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AE7C2454-436A-4D4F-9D64-34740A71300C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6DE84F19-1E81-47D1-85A5-151A8BB039C1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6DE84F19-1E81-47D1-85A5-151A8BB039C1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6DE84F19-1E81-47D1-85A5-151A8BB039C1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6DE84F19-1E81-47D1-85A5-151A8BB039C1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F2542F92-8829-430D-94E7-08284A66E136}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F2542F92-8829-430D-94E7-08284A66E136}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F2542F92-8829-430D-94E7-08284A66E136}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F2542F92-8829-430D-94E7-08284A66E136}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E3C7E270-337C-40A8-B7C2-17C700F822B5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E3C7E270-337C-40A8-B7C2-17C700F822B5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E3C7E270-337C-40A8-B7C2-17C700F822B5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E3C7E270-337C-40A8-B7C2-17C700F822B5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{09648539-80EE-44B5-8AA0-B2493E13A0DD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{09648539-80EE-44B5-8AA0-B2493E13A0DD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{09648539-80EE-44B5-8AA0-B2493E13A0DD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{09648539-80EE-44B5-8AA0-B2493E13A0DD}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{6DE84F19-1E81-47D1-85A5-151A8BB039C1} = {4AB7E2A0-8D84-415F-BA78-AA984F21ABC6}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {01FCE3F5-4C13-45E8-B04D-24D3984F0899}
+	EndGlobalSection
+EndGlobal
