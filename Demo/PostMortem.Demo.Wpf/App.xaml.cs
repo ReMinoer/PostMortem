@@ -35,7 +35,7 @@ namespace PostMortem.Demo.Wpf
                     CrashHandlers =
                     {
                         new ExceptionInfoFileCrashHandler(),
-                        new MiniDumpCrashHandler(),
+                        new WindowsProcessDumpCrashHandler(ProcessDumpType.Full),
                         new ScreenshotCrashHandler()
                     }
                 }

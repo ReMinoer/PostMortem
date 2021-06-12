@@ -31,6 +31,7 @@ namespace PostMortem.Demo.Wpf
                 new ParallelCrashHandlers
                 {
                     new ExceptionInfoFileCrashHandler(),
+                    new WindowsProcessDumpCrashHandler(ProcessDumpType.Full),
                     new ScreenshotCrashHandler()
                 }
             };
