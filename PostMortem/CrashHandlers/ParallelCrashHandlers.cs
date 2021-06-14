@@ -8,19 +8,15 @@ namespace PostMortem.CrashHandlers
 {
     public class ParallelCrashHandlers : CompositeCrashHandlerBase
     {
-        public override async Task<bool> HandleCrashAsync(ICrashContext crashContext, CancellationToken cancellationToken)
+        protected override async Task<bool> HandleCrashAsync(Func<ICrashHandler, Task<bool>> taskGetter, bool alwaysContinue)
         {
-            try
-            {
-                var results = await Task.WhenAll(CrashHandlers.Select(x => x.HandleCrashAsync(crashContext, cancellationToken)));
-                return AlwaysContinue || results.All(x => x);
-            }
-            catch (Exception)
-            {
-                if (AlwaysContinue)
-                    return true;
-                throw;
-            }
+            bool[] results = await Task.WhenAll(CrashHandlers.Select(taskGetter));
+            return alwaysContinue || results.All(x => x);
+        }
+
+        public override Task ConfigureReportAsync(IReport report, CancellationToken cancellationToken)
+        {
+            return Task.WhenAll(CrashHandlers.Select(x => x.ConfigureReportAsync(report, cancellationToken)));
         }
     }
 }

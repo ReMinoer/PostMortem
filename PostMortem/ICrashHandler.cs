@@ -7,5 +7,6 @@ namespace PostMortem
     {
         Task<bool> HandleCrashAsync(ICrashContext crashContext, CancellationToken cancellationToken);
         Task ConfigureReportAsync(IReport report, CancellationToken cancellationToken);
+        Task<bool> HandleCrashAndConfigureReportAsync(ICrashContext crashContext, IReport report, CancellationToken cancellationToken);
     }
 }

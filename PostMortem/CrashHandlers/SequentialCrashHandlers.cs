@@ -7,22 +7,19 @@ namespace PostMortem.CrashHandlers
 {
     public class SequentialCrashHandlers : CompositeCrashHandlerBase
     {
-        public override async Task<bool> HandleCrashAsync(ICrashContext crashContext, CancellationToken cancellationToken)
+        protected override async Task<bool> HandleCrashAsync(Func<ICrashHandler, Task<bool>> taskGetter, bool alwaysContinue)
         {
-            try
-            {
-                foreach (var crashHandler in CrashHandlers)
-                    if (!await crashHandler.HandleCrashAsync(crashContext, cancellationToken) && !AlwaysContinue)
-                        return false;
+            foreach (ICrashHandler crashHandler in CrashHandlers)
+                if (!await taskGetter(crashHandler) && !alwaysContinue)
+                    return false;
 
-                return true;
-            }
-            catch (Exception)
-            {
-                if (AlwaysContinue)
-                    return true;
-                throw;
-            }
+            return true;
+        }
+
+        public override async Task ConfigureReportAsync(IReport report, CancellationToken cancellationToken)
+        {
+            foreach (ICrashHandler crashHandler in CrashHandlers)
+                await crashHandler.ConfigureReportAsync(report, cancellationToken);
         }
     }
 }

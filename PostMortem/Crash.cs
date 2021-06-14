@@ -34,11 +34,14 @@ namespace PostMortem
         {
             try
             {
-                if (!await crashHandler.HandleCrashAsync(crashContext, cancellationToken))
-                    return;
-
                 await report.PrepareAsync(crashContext, cancellationToken);
-                await crashHandler.ConfigureReportAsync(report, cancellationToken);
+
+                if (!await crashHandler.HandleCrashAndConfigureReportAsync(crashContext, report, cancellationToken))
+                {
+                    await report.CancelAsync();
+                    return;
+                }
+
                 await report.ReportAsync(cancellationToken);
             }
             catch (OperationCanceledException)
