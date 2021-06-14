@@ -12,5 +12,7 @@ namespace PostMortem.CrashHandlers
             Console.WriteLine(crashContext.Exception.ToString());
             return Task.FromResult(true);
         }
+
+        public override Task ConfigureReportAsync(IReport report, CancellationToken cancellationToken) => Task.CompletedTask;
     }
 }

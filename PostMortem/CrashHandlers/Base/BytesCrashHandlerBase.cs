@@ -16,10 +16,9 @@ namespace PostMortem.CrashHandlers.Base
             Bytes = await GetBytesAsync(crashContext, cancellationToken);
         }
 
-        public override async Task ConfigureReportAsync(IReport compositeReport, CancellationToken cancellationToken)
+        public override async Task ConfigureReportAsync(IReport report, CancellationToken cancellationToken)
         {
-            await base.ConfigureReportAsync(compositeReport, cancellationToken);
-            await compositeReport.AddBytesAsync(this, cancellationToken);
+            await report.AddBytesAsync(this, cancellationToken);
         }
 
         protected abstract Task<byte[]> GetBytesAsync(ICrashContext crashContext, CancellationToken cancellationToken);

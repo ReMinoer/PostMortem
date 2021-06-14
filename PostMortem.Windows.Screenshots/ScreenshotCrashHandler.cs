@@ -59,12 +59,10 @@ namespace PostMortem.Windows.Screenshots
             return true;
         }
 
-        public override async Task ConfigureReportAsync(IReport compositeReport, CancellationToken cancellationToken)
+        public override async Task ConfigureReportAsync(IReport report, CancellationToken cancellationToken)
         {
-            await base.ConfigureReportAsync(compositeReport, cancellationToken);
-
             foreach (var screenshot in _screenshots)
-                await compositeReport.AddBytesAsync(screenshot, cancellationToken);
+                await report.AddBytesAsync(screenshot, cancellationToken);
         }
 
         public class Screenshot : IReportBytes

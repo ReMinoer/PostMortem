@@ -15,7 +15,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PostMortem.Windows.Screensh
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PostMortem.Windows.Wpf", "PostMortem.Windows.Wpf\PostMortem.Windows.Wpf.csproj", "{E3C7E270-337C-40A8-B7C2-17C700F822B5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PostMortem.Logging", "PostMortem.Logging\PostMortem.Logging.csproj", "{09648539-80EE-44B5-8AA0-B2493E13A0DD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PostMortem.Logging", "PostMortem.Logging\PostMortem.Logging.csproj", "{09648539-80EE-44B5-8AA0-B2493E13A0DD}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PostMortem.Windows.Forms", "PostMortem.Windows.Forms\PostMortem.Windows.Forms.csproj", "{0E85F81C-CC61-4F4D-8DFA-5BF71CD7B480}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -47,6 +49,10 @@ Global
 		{09648539-80EE-44B5-8AA0-B2493E13A0DD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{09648539-80EE-44B5-8AA0-B2493E13A0DD}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{09648539-80EE-44B5-8AA0-B2493E13A0DD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0E85F81C-CC61-4F4D-8DFA-5BF71CD7B480}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0E85F81C-CC61-4F4D-8DFA-5BF71CD7B480}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0E85F81C-CC61-4F4D-8DFA-5BF71CD7B480}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0E85F81C-CC61-4F4D-8DFA-5BF71CD7B480}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

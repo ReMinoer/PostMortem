@@ -22,17 +22,16 @@ namespace PostMortem.Demo.Wpf
 
             _crashHandler = new SequentialCrashHandlers
             {
-                new SequentialCrashHandlers
-                {
-                    new ConsoleCrashHandler(),
-                    new LogCrashHandler(logger),
-                    MessageBoxCrashHandler.InformUser
-                },
+                new ConsoleCrashHandler(),
+                new LogCrashHandler(logger),
+                WpfMessageBoxCrashHandler.InformUser,
+                new WpfWaitingWindowCrashHandler(),
                 new ParallelCrashHandlers
                 {
-                    new ExceptionInfoFileCrashHandler(),
+                    new ExceptionInfoCrashHandler(),
                     new WindowsProcessDumpCrashHandler(ProcessDumpType.Full),
-                    new ScreenshotCrashHandler()
+                    new ScreenshotCrashHandler(),
+                    new FilePatternCrashHandler("*.pdb")
                 }
             };
 

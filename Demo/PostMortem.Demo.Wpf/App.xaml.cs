@@ -23,20 +23,19 @@ namespace PostMortem.Demo.Wpf
 
             var crashHandler = new SequentialCrashHandlers
             {
-                new SequentialCrashHandlers
-                {
-                    new ConsoleCrashHandler(),
-                    new LogCrashHandler(logger),
-                    MessageBoxCrashHandler.AskUser
-                },
+                new ConsoleCrashHandler(),
+                new LogCrashHandler(logger),
+                WpfMessageBoxCrashHandler.AskUser,
+                new WpfWaitingWindowCrashHandler(),
                 new ParallelCrashHandlers
                 {
                     AlwaysContinue = true,
                     CrashHandlers =
                     {
-                        new ExceptionInfoFileCrashHandler(),
+                        new ExceptionInfoCrashHandler(),
                         new WindowsProcessDumpCrashHandler(ProcessDumpType.Full),
-                        new ScreenshotCrashHandler()
+                        new ScreenshotCrashHandler(),
+                        new FilePatternCrashHandler("*.pdb")
                     }
                 }
             };

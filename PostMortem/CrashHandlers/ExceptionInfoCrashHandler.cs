@@ -5,7 +5,7 @@ using PostMortem.Utils;
 
 namespace PostMortem.CrashHandlers
 {
-    public class ExceptionInfoFileCrashHandler : TextCrashHandlerBase
+    public class ExceptionInfoCrashHandler : TextCrashHandlerBase
     {
         protected override string GetDefaultFileName(ICrashContext crashContext) => crashContext.GetDefaultFileName("exception", "txt");
 

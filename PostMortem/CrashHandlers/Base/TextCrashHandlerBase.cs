@@ -17,10 +17,9 @@ namespace PostMortem.CrashHandlers.Base
             Text = await GetTextAsync(crashContext, cancellationToken);
         }
 
-        public override async Task ConfigureReportAsync(IReport compositeReport, CancellationToken cancellationToken)
+        public override async Task ConfigureReportAsync(IReport report, CancellationToken cancellationToken)
         {
-            await base.ConfigureReportAsync(compositeReport, cancellationToken);
-            await compositeReport.AddTextAsync(this, cancellationToken);
+            await report.AddTextAsync(this, cancellationToken);
         }
 
         protected abstract Task<string> GetTextAsync(ICrashContext crashContext, CancellationToken cancellationToken);

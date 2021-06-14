@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using PostMortem.Utils;
@@ -9,7 +10,9 @@ namespace PostMortem.Reports
     {
         public string FolderPath { get; private set; }
         public CrashPathProvider FolderPathProvider { get; }
-        public bool MoveFiles { get; set; } = true;
+
+        public event EventHandler Reported;
+        public event EventHandler Cancelled;
 
         public FolderReport()
         {
@@ -25,20 +28,31 @@ namespace PostMortem.Reports
 
             if (!Directory.Exists(FolderPath))
                 Directory.CreateDirectory(FolderPath);
+
             return Task.CompletedTask;
         }
 
-        public Task ProcessAsync(CancellationToken cancellationToken)
+        public Task ReportAsync(CancellationToken cancellationToken)
         {
+            Reported?.Invoke(this, EventArgs.Empty);
             return Task.CompletedTask;
         }
 
-        public async Task AddFileAsync(IReportFile reportFile, CancellationToken cancellationToken)
+        public Task CancelAsync()
         {
-            if (MoveFiles)
-                await Task.Run(() => File.Move(reportFile.FilePath, Path.Combine(FolderPath, Path.GetFileName(reportFile.FilePath))));
+            if (!string.IsNullOrEmpty(FolderPath) && Directory.Exists(FolderPath))
+                Directory.Delete(FolderPath);
+
+            Cancelled?.Invoke(this, EventArgs.Empty);
+            return Task.CompletedTask;
+        }
+
+        public async Task AddFileAsync(IReportFile reportFile, bool removeFile, CancellationToken cancellationToken)
+        {
+            if (removeFile)
+                await Task.Run(() => File.Move(reportFile.FilePath, Path.Combine(FolderPath, Path.GetFileName(reportFile.FilePath))), cancellationToken);
             else
-                await Task.Run(() => File.Copy(reportFile.FilePath, Path.Combine(FolderPath, Path.GetFileName(reportFile.FilePath)), overwrite: true));
+                await Task.Run(() => File.Copy(reportFile.FilePath, Path.Combine(FolderPath, Path.GetFileName(reportFile.FilePath)), overwrite: true), cancellationToken);
         }
 
         public async Task AddTextAsync(IReportText reportText, CancellationToken cancellationToken)

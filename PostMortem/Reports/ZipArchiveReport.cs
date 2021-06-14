@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.IO.Compression;
 using System.Threading;
 using System.Threading.Tasks;
@@ -20,6 +21,9 @@ namespace PostMortem.Reports
 
         public bool CanReport => !string.IsNullOrWhiteSpace(FilePath) && File.Exists(FilePath);
 
+        public override event EventHandler Reported;
+        public override event EventHandler Cancelled;
+
         public ZipArchiveReport()
         {
             _folderReport = new FolderReport();
@@ -36,12 +40,22 @@ namespace PostMortem.Reports
             return base.PrepareAsync(crashContext, cancellationToken);
         }
 
-        public override async Task ProcessAsync(CancellationToken cancellationToken)
+        public override async Task ReportAsync(CancellationToken cancellationToken)
         {
-            await base.ProcessAsync(cancellationToken);
+            await base.ReportAsync(cancellationToken);
             await Task.Run(() => ZipFile.CreateFromDirectory(TemporaryFolderPath, FilePath), cancellationToken);
 
             Directory.Delete(TemporaryFolderPath, recursive: true);
+        }
+
+        public override async Task CancelAsync()
+        {
+            await base.CancelAsync();
+
+            if (CanReport)
+                File.Delete(FilePath);
+
+            Cancelled?.Invoke(this, EventArgs.Empty);
         }
     }
 }

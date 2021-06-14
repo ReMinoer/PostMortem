@@ -17,11 +17,13 @@ namespace PostMortem.Logging
         public override Task<bool> HandleCrashAsync(ICrashContext crashContext, CancellationToken cancellationToken)
         {
             if (crashContext.Unhandled)
-                _logger.LogCritical(crashContext.Exception, null);
+                _logger.LogCritical(crashContext.Exception, string.Empty);
             else
-                _logger.LogError(crashContext.Exception, null);
+                _logger.LogError(crashContext.Exception, string.Empty);
 
             return Task.FromResult(true);
         }
+
+        public override Task ConfigureReportAsync(IReport report, CancellationToken cancellationToken) => Task.CompletedTask;
     }
 }

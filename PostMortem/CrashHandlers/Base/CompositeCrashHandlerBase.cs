@@ -10,10 +10,10 @@ namespace PostMortem.CrashHandlers.Base
         public List<ICrashHandler> CrashHandlers { get; } = new List<ICrashHandler>();
         public bool AlwaysContinue { get; set; }
         
-        public override async Task ConfigureReportAsync(IReport compositeReport, CancellationToken cancellationToken)
+        public override async Task ConfigureReportAsync(IReport report, CancellationToken cancellationToken)
         {
             foreach (var crashHandler in CrashHandlers)
-                await crashHandler.ConfigureReportAsync(compositeReport, cancellationToken);
+                await crashHandler.ConfigureReportAsync(report, cancellationToken);
         }
         
         public void Add(ICrashHandler crashHandler) => CrashHandlers.Add(crashHandler);

@@ -11,5 +11,7 @@ namespace PostMortem.CrashHandlers
         {
             return Task.FromResult(!(crashContext.Unhandled && Debugger.IsAttached));
         }
+
+        public override Task ConfigureReportAsync(IReport report, CancellationToken cancellationToken) => Task.CompletedTask;
     }
 }

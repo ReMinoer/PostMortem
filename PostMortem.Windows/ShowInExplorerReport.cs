@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Diagnostics;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -12,6 +13,9 @@ namespace PostMortem.Windows
         public IReportFile FileToShow { get; set; }
         protected override IReport BaseReport => Report;
 
+        public override event EventHandler Reported;
+        public override event EventHandler Cancelled;
+
         public ShowInExplorerReport()
         {
         }
@@ -22,14 +26,22 @@ namespace PostMortem.Windows
             FileToShow = fileToShow;
         }
 
-        public override async Task ProcessAsync(CancellationToken cancellationToken)
+        public override async Task ReportAsync(CancellationToken cancellationToken)
         {
-            await base.ProcessAsync(cancellationToken);
+            await base.ReportAsync(cancellationToken);
 
             if (!File.Exists(FileToShow.FilePath))
                 throw new FileNotFoundException($"Cannot found report file path \"{FileToShow.FilePath}\".");
 
             Process.Start("explorer", $"/select,\"{FileToShow.FilePath}\"");
+
+            Reported?.Invoke(this, EventArgs.Empty);
+        }
+
+        public override async Task CancelAsync()
+        {
+            await base.CancelAsync();
+            Cancelled?.Invoke(this, EventArgs.Empty);
         }
     }
 }

@@ -13,6 +13,8 @@ namespace PostMortem.Windows
         public string ProcessName { get; set; }
         public ProcessDumpType DumpType { get; set; } = ProcessDumpType.Mini;
 
+        protected override bool RemoveFileOnReport => true;
+
         public WindowsProcessDumpCrashHandler()
         {
         }
