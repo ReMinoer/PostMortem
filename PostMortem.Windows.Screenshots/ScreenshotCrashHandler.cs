@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Drawing;
 using System.Drawing.Imaging;
-using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -14,9 +13,9 @@ namespace PostMortem.Windows.Screenshots
 {
     public class ScreenshotCrashHandler : CrashHandlerBase
     {
-        private Screenshot[] _screenshots;
         public ImageFormat ImageFormat { get; set; } = ImageFormat.Png;
         public CrashMultiPathProvider PathProvider { get; }
+        public object PartId { get; set; }
 
         public ScreenshotCrashHandler()
         {
@@ -28,8 +27,9 @@ namespace PostMortem.Windows.Screenshots
 
         public override async Task<bool> HandleCrashAsync(ICrashContext crashContext, IReport report, CancellationToken cancellationToken)
         {
-            _screenshots = await Task.WhenAll(Screen.AllScreens.Select((screen, index) => Task.Run(() =>
+            await Task.WhenAll(Screen.AllScreens.Select(async (screen, index) =>
             {
+                ScreenshotPart screenshotPart;
                 var suggestedFileName = PathProvider.GetName(crashContext, index.ToString());
                 try
                 {
@@ -43,35 +43,32 @@ namespace PostMortem.Windows.Screenshots
                         using (Graphics graphics = Graphics.FromImage(bitmap))
                             graphics.CopyFromScreen(x, y, 0, 0, new Size(width, height));
 
-                        using (var memoryStream = new MemoryStream())
-                        {
-                            bitmap.Save(memoryStream, ImageFormat);
-                            return new Screenshot(suggestedFileName, memoryStream.ToArray());
-                        }
+                        screenshotPart = new ScreenshotPart(suggestedFileName, canReport: true);
+
+                        using (IPartStream partStream = await report.CreatePartStreamAsync(screenshotPart, PartId, cancellationToken))
+                            bitmap.Save(partStream.Stream, ImageFormat);
                     }
                 }
                 catch (Exception)
                 {
-                    return new Screenshot(suggestedFileName, Array.Empty<byte>());
+                    screenshotPart = new ScreenshotPart(suggestedFileName, canReport: false);
+                    (await report.CreatePartStreamAsync(screenshotPart, PartId, cancellationToken)).Dispose();
                 }
-            }, cancellationToken)));
 
-            foreach (var screenshot in _screenshots)
-                await report.AddBytesAsync(screenshot, cancellationToken);
+            }));
 
             return true;
         }
 
-        public class Screenshot : IReportBytes
+        public class ScreenshotPart : IReportPart
         {
             public string SuggestedFileName { get; }
-            public byte[] Bytes { get; }
-            public bool CanReport => Bytes != null;
+            public bool CanReport { get; }
 
-            public Screenshot(string suggestedFileName, byte[] bytes)
+            public ScreenshotPart(string suggestedFileName, bool canReport)
             {
                 SuggestedFileName = suggestedFileName;
-                Bytes = bytes;
+                CanReport = canReport;
             }
         }
     }

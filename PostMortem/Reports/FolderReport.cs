@@ -47,7 +47,7 @@ namespace PostMortem.Reports
             return Task.CompletedTask;
         }
 
-        public async Task AddFileAsync(IReportFile reportFile, bool removeFile, CancellationToken cancellationToken)
+        public async Task AddFileAsync(IReportFile reportFile, object partId, bool removeFile, CancellationToken cancellationToken)
         {
             if (removeFile)
                 await Task.Run(() => File.Move(reportFile.FilePath, Path.Combine(FolderPath, Path.GetFileName(reportFile.FilePath))), cancellationToken);
@@ -55,20 +55,25 @@ namespace PostMortem.Reports
                 await Task.Run(() => File.Copy(reportFile.FilePath, Path.Combine(FolderPath, Path.GetFileName(reportFile.FilePath)), overwrite: true), cancellationToken);
         }
 
-        public async Task AddTextAsync(IReportText reportText, CancellationToken cancellationToken)
+        public async Task AddTextAsync(IReportText reportText, object partId, CancellationToken cancellationToken)
         {
-            using (StreamWriter streamWriter = File.CreateText(Path.Combine(FolderPath, reportText.SuggestedFileName)))
-            {
+            using (IPartStream partStream = await CreatePartStreamAsync(reportText, partId, cancellationToken))
+            using (var streamWriter = new StreamWriter(partStream.Stream))
                 await streamWriter.WriteAsync(reportText.Text);
-            }
         }
 
-        public async Task AddBytesAsync(IReportBytes reportBytes, CancellationToken cancellationToken)
+        public async Task AddBytesAsync(IReportBytes reportBytes, object partId, CancellationToken cancellationToken)
         {
-            using (FileStream fileStream = File.Create(Path.Combine(FolderPath, reportBytes.SuggestedFileName)))
-            {
-                await fileStream.WriteAsync(reportBytes.Bytes, 0, reportBytes.Bytes.Length, cancellationToken);
-            }
+            using (IPartStream partStream = await CreatePartStreamAsync(reportBytes, partId, cancellationToken))
+                await partStream.Stream.WriteAsync(reportBytes.Bytes, 0, reportBytes.Bytes.Length, cancellationToken);
+        }
+
+        public Task<IPartStream> CreatePartStreamAsync(IReportPart reportPart, object partId, CancellationToken cancellationToken)
+        {
+            FileStream fileStream = File.Create(Path.Combine(FolderPath, reportPart.SuggestedFileName));
+            IPartStream partStream = new PartStream(fileStream);
+
+            return Task.FromResult(partStream);
         }
     }
 }

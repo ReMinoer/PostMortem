@@ -13,6 +13,8 @@ namespace PostMortem.Reports
         private ZipArchive _zipArchive;
 
         public string FilePath { get; private set; }
+        string IReportPart.SuggestedFileName => Path.GetFileName(FilePath);
+
         public CrashPathProvider PathProvider { get; }
 
         public bool CanReport => !string.IsNullOrWhiteSpace(FilePath) && File.Exists(FilePath);
@@ -38,27 +40,35 @@ namespace PostMortem.Reports
             return Task.CompletedTask;
         }
 
-        public async Task AddFileAsync(IReportFile reportFile, bool removeFile, CancellationToken cancellationToken)
+        public async Task AddFileAsync(IReportFile reportFile, object partId, bool removeFile, CancellationToken cancellationToken)
         {
-            using (await WriteLockAsync(cancellationToken))
-            using (Stream entryStream = _zipArchive.CreateEntry(Path.GetFileName(reportFile.FilePath)).Open())
+            using (IPartStream partStream = await CreatePartStreamAsync(reportFile, partId, cancellationToken))
             using (FileStream fileStream = File.OpenRead(reportFile.FilePath))
-                await fileStream.CopyToAsync(entryStream, 4096, CancellationToken.None);
+                await fileStream.CopyToAsync(partStream.Stream, 4096, CancellationToken.None);
+
+            if (removeFile)
+                File.Delete(reportFile.FilePath);
         }
 
-        public async Task AddTextAsync(IReportText reportText, CancellationToken cancellationToken)
+        public async Task AddTextAsync(IReportText reportText, object partId, CancellationToken cancellationToken)
         {
-            using (await WriteLockAsync(cancellationToken))
-            using (Stream entryStream = _zipArchive.CreateEntry(reportText.SuggestedFileName).Open())
-            using (StreamWriter streamWriter = new StreamWriter(entryStream))
+            using (IPartStream partStream = await CreatePartStreamAsync(reportText, partId, cancellationToken))
+            using (StreamWriter streamWriter = new StreamWriter(partStream.Stream))
                 await streamWriter.WriteAsync(reportText.Text);
         }
 
-        public async Task AddBytesAsync(IReportBytes reportBytes, CancellationToken cancellationToken)
+        public async Task AddBytesAsync(IReportBytes reportBytes, object partId, CancellationToken cancellationToken)
         {
-            using (await WriteLockAsync(cancellationToken))
-            using (Stream entryStream = _zipArchive.CreateEntry(reportBytes.SuggestedFileName).Open())
-                await entryStream.WriteAsync(reportBytes.Bytes, 0, reportBytes.Bytes.Length, cancellationToken);
+            using (IPartStream partStream = await CreatePartStreamAsync(reportBytes, partId, cancellationToken))
+                await partStream.Stream.WriteAsync(reportBytes.Bytes, 0, reportBytes.Bytes.Length, cancellationToken);
+        }
+
+        public async Task<IPartStream> CreatePartStreamAsync(IReportPart reportPart, object partId, CancellationToken cancellationToken)
+        {
+            IDisposable writeLock = await WriteLockAsync(cancellationToken);
+            Stream entryStream = _zipArchive.CreateEntry(reportPart.SuggestedFileName).Open();
+
+            return new PartStream(entryStream, writeLock);
         }
 
         public Task ReportAsync(CancellationToken cancellationToken)
