@@ -47,33 +47,33 @@ namespace PostMortem.Reports
             return Task.CompletedTask;
         }
 
-        public async Task AddFileAsync(IReportFile reportFile, object partId, bool removeFile, CancellationToken cancellationToken)
+        public async Task AddFilePartAsync(string filePath, object partId, bool removeFile, CancellationToken cancellationToken)
         {
             if (removeFile)
-                await Task.Run(() => File.Move(reportFile.FilePath, Path.Combine(FolderPath, Path.GetFileName(reportFile.FilePath))), cancellationToken);
+                await Task.Run(() => File.Move(filePath, Path.Combine(FolderPath, Path.GetFileName(filePath))), cancellationToken);
             else
-                await Task.Run(() => File.Copy(reportFile.FilePath, Path.Combine(FolderPath, Path.GetFileName(reportFile.FilePath)), overwrite: true), cancellationToken);
+                await Task.Run(() => File.Copy(filePath, Path.Combine(FolderPath, Path.GetFileName(filePath)), overwrite: true), cancellationToken);
         }
 
-        public async Task AddTextAsync(IReportText reportText, object partId, CancellationToken cancellationToken)
+        public async Task AddTextPartAsync(string text, string suggestedFileName, object partId, CancellationToken cancellationToken)
         {
-            using (IPartStream partStream = await CreatePartStreamAsync(reportText, partId, cancellationToken))
-            using (var streamWriter = new StreamWriter(partStream.Stream))
-                await streamWriter.WriteAsync(reportText.Text);
+            using (IReportPart reportPart = await CreatePartAsync(suggestedFileName, partId, cancellationToken))
+            using (var streamWriter = new StreamWriter(reportPart.Stream))
+                await streamWriter.WriteAsync(text);
         }
 
-        public async Task AddBytesAsync(IReportBytes reportBytes, object partId, CancellationToken cancellationToken)
+        public async Task AddBytesPartAsync(byte[] bytes, string suggestedFileName, object partId, CancellationToken cancellationToken)
         {
-            using (IPartStream partStream = await CreatePartStreamAsync(reportBytes, partId, cancellationToken))
-                await partStream.Stream.WriteAsync(reportBytes.Bytes, 0, reportBytes.Bytes.Length, cancellationToken);
+            using (IReportPart reportPart = await CreatePartAsync(suggestedFileName, partId, cancellationToken))
+                await reportPart.Stream.WriteAsync(bytes, 0, bytes.Length, cancellationToken);
         }
 
-        public Task<IPartStream> CreatePartStreamAsync(IReportPart reportPart, object partId, CancellationToken cancellationToken)
+        public Task<IReportPart> CreatePartAsync(string suggestedFileName, object partId, CancellationToken cancellationToken)
         {
-            FileStream fileStream = File.Create(Path.Combine(FolderPath, reportPart.SuggestedFileName));
-            IPartStream partStream = new PartStream(fileStream);
+            FileStream fileStream = File.Create(Path.Combine(FolderPath, suggestedFileName));
+            IReportPart reportPart = new ReportPart(fileStream);
 
-            return Task.FromResult(partStream);
+            return Task.FromResult(reportPart);
         }
     }
 }

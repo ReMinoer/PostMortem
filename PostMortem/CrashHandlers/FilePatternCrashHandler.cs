@@ -32,20 +32,8 @@ namespace PostMortem.CrashHandlers
 
         public override async Task<bool> HandleCrashAsync(ICrashContext crashContext, IReport report, CancellationToken cancellationToken)
         {
-            await Task.WhenAll(Directory.GetFiles(FolderPath, FileNamePattern).Select(x => report.AddFileAsync(new MatchingFile(x), PartId, DeleteFiles, cancellationToken)));
+            await Task.WhenAll(Directory.GetFiles(FolderPath, FileNamePattern).Select(x => report.AddFilePartAsync(x, PartId, DeleteFiles, cancellationToken)));
             return true;
-        }
-
-        public class MatchingFile : IReportFile
-        {
-            public string FilePath { get; }
-            public string SuggestedFileName => Path.GetFileName(FilePath);
-            public bool CanReport => !string.IsNullOrWhiteSpace(FilePath) && File.Exists(FilePath);
-
-            public MatchingFile(string filePath)
-            {
-                FilePath = filePath;
-            }
         }
     }
 }

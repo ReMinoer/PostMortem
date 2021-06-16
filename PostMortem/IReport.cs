@@ -9,10 +9,10 @@ namespace PostMortem
         event EventHandler Reported;
         event EventHandler Cancelled;
         Task PrepareAsync(ICrashContext crashContext, CancellationToken cancellationToken);
-        Task AddFileAsync(IReportFile reportFile, object partId, bool removeFile, CancellationToken cancellationToken);
-        Task AddTextAsync(IReportText reportText, object partId, CancellationToken cancellationToken);
-        Task AddBytesAsync(IReportBytes reportBytes, object partId, CancellationToken cancellationToken);
-        Task<IPartStream> CreatePartStreamAsync(IReportPart reportPart, object partId, CancellationToken cancellationToken);
+        Task AddFilePartAsync(string filePath, object partId, bool removeFile, CancellationToken cancellationToken);
+        Task AddTextPartAsync(string text, string suggestedFileName, object partId, CancellationToken cancellationToken);
+        Task AddBytesPartAsync(byte[] bytes, string suggestedFileName, object partId, CancellationToken cancellationToken);
+        Task<IReportPart> CreatePartAsync(string suggestedFileName, object partId, CancellationToken cancellationToken);
         Task ReportAsync(CancellationToken cancellationToken);
         Task CancelAsync();
     }

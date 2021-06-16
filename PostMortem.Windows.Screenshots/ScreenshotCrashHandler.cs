@@ -29,7 +29,6 @@ namespace PostMortem.Windows.Screenshots
         {
             await Task.WhenAll(Screen.AllScreens.Select(async (screen, index) =>
             {
-                ScreenshotPart screenshotPart;
                 var suggestedFileName = PathProvider.GetName(crashContext, index.ToString());
                 try
                 {
@@ -42,34 +41,19 @@ namespace PostMortem.Windows.Screenshots
                     {
                         using (Graphics graphics = Graphics.FromImage(bitmap))
                             graphics.CopyFromScreen(x, y, 0, 0, new Size(width, height));
-
-                        screenshotPart = new ScreenshotPart(suggestedFileName, canReport: true);
-
-                        using (IPartStream partStream = await report.CreatePartStreamAsync(screenshotPart, PartId, cancellationToken))
-                            bitmap.Save(partStream.Stream, ImageFormat);
+                        
+                        using (IReportPart reportPart = await report.CreatePartAsync(suggestedFileName, PartId, cancellationToken))
+                            bitmap.Save(reportPart.Stream, ImageFormat);
                     }
                 }
                 catch (Exception)
                 {
-                    screenshotPart = new ScreenshotPart(suggestedFileName, canReport: false);
-                    (await report.CreatePartStreamAsync(screenshotPart, PartId, cancellationToken)).Dispose();
+                    (await report.CreatePartAsync(suggestedFileName, PartId, cancellationToken)).Dispose();
                 }
 
             }));
 
             return true;
-        }
-
-        public class ScreenshotPart : IReportPart
-        {
-            public string SuggestedFileName { get; }
-            public bool CanReport { get; }
-
-            public ScreenshotPart(string suggestedFileName, bool canReport)
-            {
-                SuggestedFileName = suggestedFileName;
-                CanReport = canReport;
-            }
         }
     }
 }

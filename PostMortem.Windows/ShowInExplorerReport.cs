@@ -7,10 +7,12 @@ using PostMortem.Reports.Base;
 
 namespace PostMortem.Windows
 {
-    public class ShowInExplorerReport : ReportDecoratorBase
+    public class ShowInExplorerReport<TReport> : ReportDecoratorBase
+        where TReport : IReport
     {
-        public IReport Report { get; set; }
-        public IReportFile FileToShow { get; set; }
+        public TReport Report { get; set; }
+        public Func<TReport, string> ReportPathProvider { get; set; }
+
         protected override IReport BaseReport => Report;
 
         public override event EventHandler Reported;
@@ -20,20 +22,21 @@ namespace PostMortem.Windows
         {
         }
 
-        public ShowInExplorerReport(IReport report, IReportFile fileToShow)
+        public ShowInExplorerReport(TReport report, Func<TReport, string> reportPathProvider)
         {
             Report = report;
-            FileToShow = fileToShow;
+            ReportPathProvider = reportPathProvider;
         }
 
         public override async Task ReportAsync(CancellationToken cancellationToken)
         {
             await base.ReportAsync(cancellationToken);
 
-            if (!File.Exists(FileToShow.FilePath))
-                throw new FileNotFoundException($"Cannot found report file path \"{FileToShow.FilePath}\".");
+            string reportPath = ReportPathProvider(Report);
+            if (!File.Exists(reportPath) && !Directory.Exists(reportPath))
+                throw new FileNotFoundException($"Cannot found report path \"{reportPath}\".");
 
-            Process.Start("explorer", $"/select,\"{FileToShow.FilePath}\"");
+            Process.Start("explorer", $"/select,\"{reportPath}\"");
 
             Reported?.Invoke(this, EventArgs.Empty);
         }

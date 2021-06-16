@@ -7,17 +7,13 @@ using PostMortem.Utils;
 
 namespace PostMortem.Reports
 {
-    public class ZipArchiveReport : IReport, IReportFile
+    public class ZipArchiveReport : IReport
     {
         private FileStream _fileStream;
         private ZipArchive _zipArchive;
 
         public string FilePath { get; private set; }
-        string IReportPart.SuggestedFileName => Path.GetFileName(FilePath);
-
         public CrashPathProvider PathProvider { get; }
-
-        public bool CanReport => !string.IsNullOrWhiteSpace(FilePath) && File.Exists(FilePath);
 
         public event EventHandler Reported;
         public event EventHandler Cancelled;
@@ -40,35 +36,35 @@ namespace PostMortem.Reports
             return Task.CompletedTask;
         }
 
-        public async Task AddFileAsync(IReportFile reportFile, object partId, bool removeFile, CancellationToken cancellationToken)
+        public async Task AddFilePartAsync(string filePath, object partId, bool removeFile, CancellationToken cancellationToken)
         {
-            using (IPartStream partStream = await CreatePartStreamAsync(reportFile, partId, cancellationToken))
-            using (FileStream fileStream = File.OpenRead(reportFile.FilePath))
-                await fileStream.CopyToAsync(partStream.Stream, 4096, CancellationToken.None);
+            using (IReportPart reportPart = await CreatePartAsync(Path.GetFileName(filePath), partId, cancellationToken))
+            using (FileStream fileStream = File.OpenRead(filePath))
+                await fileStream.CopyToAsync(reportPart.Stream, 4096, CancellationToken.None);
 
             if (removeFile)
-                File.Delete(reportFile.FilePath);
+                File.Delete(filePath);
         }
 
-        public async Task AddTextAsync(IReportText reportText, object partId, CancellationToken cancellationToken)
+        public async Task AddTextPartAsync(string text, string suggestedFileName, object partId, CancellationToken cancellationToken)
         {
-            using (IPartStream partStream = await CreatePartStreamAsync(reportText, partId, cancellationToken))
-            using (StreamWriter streamWriter = new StreamWriter(partStream.Stream))
-                await streamWriter.WriteAsync(reportText.Text);
+            using (IReportPart reportPart = await CreatePartAsync(suggestedFileName, partId, cancellationToken))
+            using (StreamWriter streamWriter = new StreamWriter(reportPart.Stream))
+                await streamWriter.WriteAsync(text);
         }
 
-        public async Task AddBytesAsync(IReportBytes reportBytes, object partId, CancellationToken cancellationToken)
+        public async Task AddBytesPartAsync(byte[] bytes, string suggestedFileName, object partId, CancellationToken cancellationToken)
         {
-            using (IPartStream partStream = await CreatePartStreamAsync(reportBytes, partId, cancellationToken))
-                await partStream.Stream.WriteAsync(reportBytes.Bytes, 0, reportBytes.Bytes.Length, cancellationToken);
+            using (IReportPart reportPart = await CreatePartAsync(suggestedFileName, partId, cancellationToken))
+                await reportPart.Stream.WriteAsync(bytes, 0, bytes.Length, cancellationToken);
         }
 
-        public async Task<IPartStream> CreatePartStreamAsync(IReportPart reportPart, object partId, CancellationToken cancellationToken)
+        public async Task<IReportPart> CreatePartAsync(string suggestedFileName, object partId, CancellationToken cancellationToken)
         {
             IDisposable writeLock = await WriteLockAsync(cancellationToken);
-            Stream entryStream = _zipArchive.CreateEntry(reportPart.SuggestedFileName).Open();
+            Stream entryStream = _zipArchive.CreateEntry(suggestedFileName).Open();
 
-            return new PartStream(entryStream, writeLock);
+            return new ReportPart(entryStream, writeLock);
         }
 
         public Task ReportAsync(CancellationToken cancellationToken)
@@ -84,7 +80,7 @@ namespace PostMortem.Reports
             _zipArchive?.Dispose();
             _fileStream?.Dispose();
 
-            if (CanReport)
+            if (File.Exists(FilePath))
                 File.Delete(FilePath);
 
             Cancelled?.Invoke(this, EventArgs.Empty);

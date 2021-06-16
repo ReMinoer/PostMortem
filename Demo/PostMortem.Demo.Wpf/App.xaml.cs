@@ -40,8 +40,7 @@ namespace PostMortem.Demo.Wpf
                 }
             };
 
-            var zipArchiveReport = new ZipArchiveReport();
-            var report = new ShowInExplorerReport(zipArchiveReport, zipArchiveReport);
+            var report = new ShowInExplorerReport<ZipArchiveReport>(new ZipArchiveReport(), x => x.FilePath);
 
             Crash.SetupUnhandledExceptions(nameof(PostMortem), crashHandler, report, CancellationToken.None);
         }

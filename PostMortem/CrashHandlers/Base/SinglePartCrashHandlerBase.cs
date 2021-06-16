@@ -4,13 +4,11 @@ using PostMortem.Utils;
 
 namespace PostMortem.CrashHandlers.Base
 {
-    public abstract class SinglePartCrashHandlerBase : CrashHandlerBase, IReportPart
+    public abstract class SinglePartCrashHandlerBase : CrashHandlerBase
     {
         public object PartId { get; set; }
         public string SuggestedFileName { get; private set; }
         public CrashPathProvider PathProvider { get; } = new CrashPathProvider();
-
-        public abstract bool CanReport { get; }
 
         public override sealed async Task<bool> HandleCrashAsync(ICrashContext crashContext, IReport report, CancellationToken cancellationToken)
         {

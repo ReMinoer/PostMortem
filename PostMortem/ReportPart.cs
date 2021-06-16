@@ -3,12 +3,12 @@ using System.IO;
 
 namespace PostMortem
 {
-    public class PartStream : IPartStream
+    public class ReportPart : IReportPart
     {
         public Stream Stream { get; }
         private readonly IDisposable[] _disposables;
 
-        public PartStream(Stream stream, params IDisposable[] disposables)
+        public ReportPart(Stream stream, params IDisposable[] disposables)
         {
             Stream = stream;
             _disposables = disposables;

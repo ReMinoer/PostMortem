@@ -34,9 +34,8 @@ namespace PostMortem.Demo.Wpf
                     new FilePatternCrashHandler("*.pdb")
                 }
             };
-
-            var zipArchiveReport = new ZipArchiveReport();
-            _report = new ShowInExplorerReport(zipArchiveReport, zipArchiveReport);
+            
+            _report = new ShowInExplorerReport<FolderReport>(new FolderReport(), x => x.FolderPath);
 
             InitializeComponent();
         }

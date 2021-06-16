@@ -1,8 +1,10 @@
-﻿namespace PostMortem
+﻿using System;
+using System.IO;
+
+namespace PostMortem
 {
-    public interface IReportPart
+    public interface IReportPart : IDisposable
     {
-        bool CanReport { get; }
-        string SuggestedFileName { get; }
+        Stream Stream { get; }
     }
 }
