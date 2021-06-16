@@ -12,14 +12,10 @@ namespace PostMortem.CrashHandlers.Base
 
         public override bool CanReport => !string.IsNullOrWhiteSpace(FilePath) && File.Exists(FilePath);
 
-        protected override sealed Task CreatePartAsync(CrashPathProvider pathProvider, ICrashContext crashContext, CancellationToken cancellationToken)
+        protected override sealed async Task CreatePartAsync(CrashPathProvider pathProvider, ICrashContext crashContext, IReport report, CancellationToken cancellationToken)
         {
             FilePath = pathProvider.GetPath(crashContext);
-            return WriteFileAsync(FilePath, crashContext, cancellationToken);
-        }
-
-        public override async Task ConfigureReportAsync(IReport report, CancellationToken cancellationToken)
-        {
+            await WriteFileAsync(FilePath, crashContext, cancellationToken);
             await report.AddFileAsync(this, RemoveFileOnReport, cancellationToken);
         }
         

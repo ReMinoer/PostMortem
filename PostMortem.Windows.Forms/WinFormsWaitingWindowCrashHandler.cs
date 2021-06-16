@@ -17,8 +17,18 @@ namespace PostMortem.Windows.Forms
         public string Caption { get; set; }
         public string IconPath { get; set; }
 
-        public override Task<bool> HandleCrashAsync(ICrashContext crashContext, CancellationToken cancellationToken)
+        public override Task<bool> HandleCrashAsync(ICrashContext crashContext, IReport report, CancellationToken cancellationToken)
         {
+            report.Reported += OnReported;
+
+            void OnReported(object sender, EventArgs args)
+            {
+                report.Reported -= OnReported;
+
+                _window.Closing -= PreventClosing;
+                _window.Close();
+            };
+
             var thread = new Thread(ShowWindow);
             thread.SetApartmentState(ApartmentState.STA);
             thread.Priority = ThreadPriority.Highest;
@@ -80,21 +90,6 @@ namespace PostMortem.Windows.Forms
                 NativeMethodHelpers.SetOwnerWindow(_window.Handle, mainWindowHandle);
             
             Application.Run();
-        }
-
-        public override Task ConfigureReportAsync(IReport report, CancellationToken cancellationToken)
-        {
-            report.Reported += OnReported;
-
-            void OnReported(object sender, EventArgs args)
-            {
-                report.Reported -= OnReported;
-
-                _window.Closing -= PreventClosing;
-                _window.Close();
-            };
-
-            return Task.CompletedTask;
         }
 
         private void PreventClosing(object sender, CancelEventArgs args)

@@ -26,7 +26,7 @@ namespace PostMortem.Windows.Screenshots
             };
         }
 
-        public override async Task<bool> HandleCrashAsync(ICrashContext crashContext, CancellationToken cancellationToken)
+        public override async Task<bool> HandleCrashAsync(ICrashContext crashContext, IReport report, CancellationToken cancellationToken)
         {
             _screenshots = await Task.WhenAll(Screen.AllScreens.Select((screen, index) => Task.Run(() =>
             {
@@ -56,13 +56,10 @@ namespace PostMortem.Windows.Screenshots
                 }
             }, cancellationToken)));
 
-            return true;
-        }
-
-        public override async Task ConfigureReportAsync(IReport report, CancellationToken cancellationToken)
-        {
             foreach (var screenshot in _screenshots)
                 await report.AddBytesAsync(screenshot, cancellationToken);
+
+            return true;
         }
 
         public class Screenshot : IReportBytes

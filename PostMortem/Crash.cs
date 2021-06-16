@@ -6,12 +6,12 @@ namespace PostMortem
 {
     static public class Crash
     {
-        static public void SetupHandleAndReportOnUnhandledException(string sourceName, ICrashHandler crashHandler, IReport report, CancellationToken cancellationToken)
+        static public void SetupUnhandledExceptions(string sourceName, ICrashHandler crashHandler, IReport report, CancellationToken cancellationToken)
         {
-            SetupHandleAndReportOnUnhandledException(AppDomain.CurrentDomain, sourceName, crashHandler, report, cancellationToken);
+            SetupUnhandledExceptions(AppDomain.CurrentDomain, sourceName, crashHandler, report, cancellationToken);
         }
 
-        static public void SetupHandleAndReportOnUnhandledException(AppDomain appDomain, string sourceName, ICrashHandler crashHandler, IReport report, CancellationToken cancellationToken)
+        static public void SetupUnhandledExceptions(AppDomain appDomain, string sourceName, ICrashHandler crashHandler, IReport report, CancellationToken cancellationToken)
         {
             appDomain.UnhandledException += OnUnhandledException;
 
@@ -20,23 +20,23 @@ namespace PostMortem
                 appDomain.UnhandledException -= OnUnhandledException;
 
                 ICrashContext crashContext = CrashContext.FromUnhandledException((Exception)e.ExceptionObject, sourceName);
-                Task.Run(async () => await HandleAndReportAsync(crashContext, crashHandler, report, cancellationToken), cancellationToken).Wait(CancellationToken.None);
+                Task.Run(async () => await HandleAsync(crashContext, crashHandler, report, cancellationToken), cancellationToken).Wait(CancellationToken.None);
             }
         }
         
-        static public async Task HandleAndReportAsync(string sourceName, Exception exception, ICrashHandler crashHandler, IReport report, CancellationToken cancellationToken)
+        static public async Task HandleAsync(string sourceName, Exception exception, ICrashHandler crashHandler, IReport report, CancellationToken cancellationToken)
         {
             ICrashContext crashContext = CrashContext.FromException(exception, sourceName);
-            await HandleAndReportAsync(crashContext, crashHandler, report, cancellationToken);
+            await HandleAsync(crashContext, crashHandler, report, cancellationToken);
         }
 
-        static public async Task HandleAndReportAsync(ICrashContext crashContext, ICrashHandler crashHandler, IReport report, CancellationToken cancellationToken)
+        static public async Task HandleAsync(ICrashContext crashContext, ICrashHandler crashHandler, IReport report, CancellationToken cancellationToken)
         {
             try
             {
                 await report.PrepareAsync(crashContext, cancellationToken);
 
-                if (!await crashHandler.HandleCrashAndConfigureReportAsync(crashContext, report, cancellationToken))
+                if (!await crashHandler.HandleCrashAsync(crashContext, report, cancellationToken))
                 {
                     await report.CancelAsync();
                     return;

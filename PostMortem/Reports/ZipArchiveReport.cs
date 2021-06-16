@@ -3,59 +3,106 @@ using System.IO;
 using System.IO.Compression;
 using System.Threading;
 using System.Threading.Tasks;
-using PostMortem.Reports.Base;
 using PostMortem.Utils;
 
 namespace PostMortem.Reports
 {
-    public class ZipArchiveReport : ReportDecoratorBase, IReportFile
+    public class ZipArchiveReport : IReport, IReportFile
     {
-        private readonly FolderReport _folderReport;
-        protected override IReport BaseReport => _folderReport;
+        private FileStream _fileStream;
+        private ZipArchive _zipArchive;
 
         public string FilePath { get; private set; }
-        public string TemporaryFolderPath => _folderReport.FolderPath;
-
         public CrashPathProvider PathProvider { get; }
-        public CrashPathProvider TemporaryFolderPathProvider => _folderReport.FolderPathProvider;
 
         public bool CanReport => !string.IsNullOrWhiteSpace(FilePath) && File.Exists(FilePath);
 
-        public override event EventHandler Reported;
-        public override event EventHandler Cancelled;
+        public event EventHandler Reported;
+        public event EventHandler Cancelled;
 
         public ZipArchiveReport()
         {
-            _folderReport = new FolderReport();
-
             PathProvider = new CrashPathProvider
             {
                 NameProvider = c => c.GetDefaultFileName("crash_report", "zip")
             };
         }
 
-        public override Task PrepareAsync(ICrashContext crashContext, CancellationToken cancellationToken)
+        public Task PrepareAsync(ICrashContext crashContext, CancellationToken cancellationToken)
         {
             FilePath = PathProvider.GetPath(crashContext);
-            return base.PrepareAsync(crashContext, cancellationToken);
+
+            _fileStream = File.Create(FilePath);
+            _zipArchive = new ZipArchive(_fileStream, ZipArchiveMode.Create);
+
+            return Task.CompletedTask;
         }
 
-        public override async Task ReportAsync(CancellationToken cancellationToken)
+        public async Task AddFileAsync(IReportFile reportFile, bool removeFile, CancellationToken cancellationToken)
         {
-            await base.ReportAsync(cancellationToken);
-            await Task.Run(() => ZipFile.CreateFromDirectory(TemporaryFolderPath, FilePath), cancellationToken);
-
-            Directory.Delete(TemporaryFolderPath, recursive: true);
+            using (await WriteLockAsync(cancellationToken))
+            using (Stream entryStream = _zipArchive.CreateEntry(Path.GetFileName(reportFile.FilePath)).Open())
+            using (FileStream fileStream = File.OpenRead(reportFile.FilePath))
+                await fileStream.CopyToAsync(entryStream, 4096, CancellationToken.None);
         }
 
-        public override async Task CancelAsync()
+        public async Task AddTextAsync(IReportText reportText, CancellationToken cancellationToken)
         {
-            await base.CancelAsync();
+            using (await WriteLockAsync(cancellationToken))
+            using (Stream entryStream = _zipArchive.CreateEntry(reportText.SuggestedFileName).Open())
+            using (StreamWriter streamWriter = new StreamWriter(entryStream))
+                await streamWriter.WriteAsync(reportText.Text);
+        }
+
+        public async Task AddBytesAsync(IReportBytes reportBytes, CancellationToken cancellationToken)
+        {
+            using (await WriteLockAsync(cancellationToken))
+            using (Stream entryStream = _zipArchive.CreateEntry(reportBytes.SuggestedFileName).Open())
+                await entryStream.WriteAsync(reportBytes.Bytes, 0, reportBytes.Bytes.Length, cancellationToken);
+        }
+
+        public Task ReportAsync(CancellationToken cancellationToken)
+        {
+            _zipArchive.Dispose();
+            _fileStream.Dispose();
+
+            return Task.CompletedTask;
+        }
+
+        public Task CancelAsync()
+        {
+            _zipArchive?.Dispose();
+            _fileStream?.Dispose();
 
             if (CanReport)
                 File.Delete(FilePath);
 
             Cancelled?.Invoke(this, EventArgs.Empty);
+
+            return Task.CompletedTask;
+        }
+
+        private readonly SemaphoreSlim _semaphore = new SemaphoreSlim(1);
+
+        private async Task<IDisposable> WriteLockAsync(CancellationToken cancellationToken)
+        {
+            await _semaphore.WaitAsync(cancellationToken);
+            return new LockDisposer(_semaphore);
+        }
+
+        private class LockDisposer : IDisposable
+        {
+            private readonly SemaphoreSlim _semaphore;
+
+            public LockDisposer(SemaphoreSlim semaphore)
+            {
+                _semaphore = semaphore;
+            }
+
+            public void Dispose()
+            {
+                _semaphore.Release();
+            }
         }
     }
 }

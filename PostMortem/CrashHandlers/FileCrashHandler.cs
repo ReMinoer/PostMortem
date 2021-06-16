@@ -20,11 +20,10 @@ namespace PostMortem.CrashHandlers
             FilePath = filePath;
         }
 
-        public override Task<bool> HandleCrashAsync(ICrashContext crashContext, CancellationToken cancellationToken) => Task.FromResult(true);
-
-        public override async Task ConfigureReportAsync(IReport report, CancellationToken cancellationToken)
+        public override async Task<bool> HandleCrashAsync(ICrashContext crashContext, IReport report, CancellationToken cancellationToken)
         {
             await report.AddFileAsync(this, DeleteFile, cancellationToken);
+            return true;
         }
     }
 }

@@ -14,7 +14,7 @@ namespace PostMortem.Logging
             _logger = logger;
         }
 
-        public override Task<bool> HandleCrashAsync(ICrashContext crashContext, CancellationToken cancellationToken)
+        public override Task<bool> HandleCrashAsync(ICrashContext crashContext, IReport report, CancellationToken cancellationToken)
         {
             if (crashContext.Unhandled)
                 _logger.LogCritical(crashContext.Exception, string.Empty);
@@ -23,7 +23,5 @@ namespace PostMortem.Logging
 
             return Task.FromResult(true);
         }
-
-        public override Task ConfigureReportAsync(IReport report, CancellationToken cancellationToken) => Task.CompletedTask;
     }
 }

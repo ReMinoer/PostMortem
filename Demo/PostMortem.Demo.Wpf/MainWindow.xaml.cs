@@ -49,7 +49,7 @@ namespace PostMortem.Demo.Wpf
             }
             catch (Exception exception)
             {
-                await Crash.HandleAndReportAsync(nameof(PostMortem), exception, _crashHandler, _report, CancellationToken.None);
+                await Crash.HandleAsync(nameof(PostMortem), exception, _crashHandler, _report, CancellationToken.None);
             }
         }
 

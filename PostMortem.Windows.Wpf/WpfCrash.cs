@@ -7,12 +7,12 @@ namespace PostMortem.Windows.Wpf
 {
     static public class WpfCrash
     {
-        static public void SetupHandleAndReportOnUnhandledException(string sourceName, ICrashHandler crashHandler, IReport report, CancellationToken cancellationToken)
+        static public void SetupUnhandledExceptions(string sourceName, ICrashHandler crashHandler, IReport report, CancellationToken cancellationToken)
         {
-            SetupHandleAndReportOnUnhandledException(Application.Current, sourceName, crashHandler, report, cancellationToken);
+            SetupUnhandledExceptions(Application.Current, sourceName, crashHandler, report, cancellationToken);
         }
 
-        static public void SetupHandleAndReportOnUnhandledException(Application application, string sourceName, ICrashHandler crashHandler, IReport report, CancellationToken cancellationToken)
+        static public void SetupUnhandledExceptions(Application application, string sourceName, ICrashHandler crashHandler, IReport report, CancellationToken cancellationToken)
         {
             application.DispatcherUnhandledException += OnUnhandledException;
 
@@ -21,11 +21,11 @@ namespace PostMortem.Windows.Wpf
                 application.DispatcherUnhandledException -= OnUnhandledException;
 
                 CrashContext crashContext = CrashContext.FromUnhandledException(e.Exception, sourceName);
-                Task.Run(async () => await Crash.HandleAndReportAsync(crashContext, crashHandler, report, cancellationToken), cancellationToken).Wait(CancellationToken.None);
+                Task.Run(async () => await Crash.HandleAsync(crashContext, crashHandler, report, cancellationToken), cancellationToken).Wait(CancellationToken.None);
             }
         }
 
-        static public void SetupHandleAndReportOnUnhandledException(Dispatcher dispatcher, string sourceName, ICrashHandler crashHandler, IReport report, CancellationToken cancellationToken)
+        static public void SetupUnhandledExceptions(Dispatcher dispatcher, string sourceName, ICrashHandler crashHandler, IReport report, CancellationToken cancellationToken)
         {
             dispatcher.UnhandledException += OnUnhandledException;
 
@@ -34,7 +34,7 @@ namespace PostMortem.Windows.Wpf
                 dispatcher.UnhandledException -= OnUnhandledException;
 
                 CrashContext crashContext = CrashContext.FromUnhandledException(e.Exception, sourceName);
-                Task.Run(async () => await Crash.HandleAndReportAsync(crashContext, crashHandler, report, cancellationToken), cancellationToken).Wait(CancellationToken.None);
+                Task.Run(async () => await Crash.HandleAsync(crashContext, crashHandler, report, cancellationToken), cancellationToken).Wait(CancellationToken.None);
             }
         }
     }

@@ -10,14 +10,10 @@ namespace PostMortem.CrashHandlers.Base
         public string SuggestedFileName { get; set; }
         public override bool CanReport => Bytes != null;
 
-        protected override sealed async Task CreatePartAsync(CrashPathProvider pathProvider, ICrashContext crashContext, CancellationToken cancellationToken)
+        protected override sealed async Task CreatePartAsync(CrashPathProvider pathProvider, ICrashContext crashContext, IReport report, CancellationToken cancellationToken)
         {
             SuggestedFileName = pathProvider.GetName(crashContext);
             Bytes = await GetBytesAsync(crashContext, cancellationToken);
-        }
-
-        public override async Task ConfigureReportAsync(IReport report, CancellationToken cancellationToken)
-        {
             await report.AddBytesAsync(this, cancellationToken);
         }
 

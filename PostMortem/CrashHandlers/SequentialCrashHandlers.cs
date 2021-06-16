@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Threading;
 using System.Threading.Tasks;
 using PostMortem.CrashHandlers.Base;
 
@@ -14,12 +13,6 @@ namespace PostMortem.CrashHandlers
                     return false;
 
             return true;
-        }
-
-        public override async Task ConfigureReportAsync(IReport report, CancellationToken cancellationToken)
-        {
-            foreach (ICrashHandler crashHandler in CrashHandlers)
-                await crashHandler.ConfigureReportAsync(report, cancellationToken);
         }
     }
 }

@@ -26,12 +26,10 @@ namespace PostMortem.Windows.Forms
             ExpectedResult = DialogResult.Yes
         };
         
-        public override Task<bool> HandleCrashAsync(ICrashContext crashContext, CancellationToken cancellationToken)
+        public override Task<bool> HandleCrashAsync(ICrashContext crashContext, IReport report, CancellationToken cancellationToken)
         {
             DialogResult result = MessageBox.Show(Text, Caption, Buttons, Icon, DefaultResult, Options);
             return Task.FromResult(result == ExpectedResult);
         }
-
-        public override Task ConfigureReportAsync(IReport report, CancellationToken cancellationToken) => Task.CompletedTask;
     }
 }

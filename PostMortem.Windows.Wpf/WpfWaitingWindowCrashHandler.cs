@@ -20,8 +20,22 @@ namespace PostMortem.Windows.Wpf
         public string Caption { get; set; }
         public Uri IconUri { get; set; }
 
-        public override Task<bool> HandleCrashAsync(ICrashContext crashContext, CancellationToken cancellationToken)
+        public override Task<bool> HandleCrashAsync(ICrashContext crashContext, IReport report, CancellationToken cancellationToken)
         {
+            report.Reported += OnReported;
+
+            void OnReported(object sender, EventArgs args)
+            {
+                report.Reported -= OnReported;
+
+                _window.Closing -= PreventClosing;
+
+                if (_window.Dispatcher.CheckAccess())
+                    _window.Close();
+                else
+                    _window.Dispatcher.Invoke(DispatcherPriority.Normal, new ThreadStart(_window.Close));
+            };
+
             var thread = new Thread(ShowWindow);
             thread.SetApartmentState(ApartmentState.STA);
             thread.Priority = ThreadPriority.Highest;
@@ -71,25 +85,6 @@ namespace PostMortem.Windows.Wpf
                 NativeMethodHelpers.SetOwnerWindow(new WindowInteropHelper(_window).EnsureHandle(), mainWindowHandle);
 
             Dispatcher.Run();
-        }
-
-        public override Task ConfigureReportAsync(IReport report, CancellationToken cancellationToken)
-        {
-            report.Reported += OnReported;
-
-            void OnReported(object sender, EventArgs args)
-            {
-                report.Reported -= OnReported;
-
-                _window.Closing -= PreventClosing;
-                
-                if (_window.Dispatcher.CheckAccess())
-                    _window.Close();
-                else
-                    _window.Dispatcher.Invoke(DispatcherPriority.Normal, new ThreadStart(_window.Close));
-            };
-
-            return Task.CompletedTask;
         }
 
         private void PreventClosing(object sender, CancelEventArgs args)

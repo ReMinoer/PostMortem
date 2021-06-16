@@ -11,14 +11,10 @@ namespace PostMortem.CrashHandlers.Base
 
         public override bool CanReport => Text != null;
 
-        protected override sealed async Task CreatePartAsync(CrashPathProvider pathProvider, ICrashContext crashContext, CancellationToken cancellationToken)
+        protected override sealed async Task CreatePartAsync(CrashPathProvider pathProvider, ICrashContext crashContext, IReport report, CancellationToken cancellationToken)
         {
             SuggestedFileName = pathProvider.GetName(crashContext);
             Text = await GetTextAsync(crashContext, cancellationToken);
-        }
-
-        public override async Task ConfigureReportAsync(IReport report, CancellationToken cancellationToken)
-        {
             await report.AddTextAsync(this, cancellationToken);
         }
 

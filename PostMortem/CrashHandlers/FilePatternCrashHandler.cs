@@ -28,12 +28,12 @@ namespace PostMortem.CrashHandlers
             FileNamePattern = fileNamePattern;
         }
 
-        public override Task<bool> HandleCrashAsync(ICrashContext crashContext, CancellationToken cancellationToken) => Task.FromResult(true);
-
-        public override async Task ConfigureReportAsync(IReport report, CancellationToken cancellationToken)
+        public override async Task<bool> HandleCrashAsync(ICrashContext crashContext, IReport report, CancellationToken cancellationToken)
         {
             foreach (string filePath in Directory.GetFiles(FolderPath, FileNamePattern))
                 await report.AddFileAsync(new MatchingFile(filePath), DeleteFiles, cancellationToken);
+
+            return true;
         }
 
         public class MatchingFile : IReportFile

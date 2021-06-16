@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using PostMortem.CrashHandlers.Base;
 
@@ -12,11 +11,6 @@ namespace PostMortem.CrashHandlers
         {
             bool[] results = await Task.WhenAll(CrashHandlers.Select(taskGetter));
             return alwaysContinue || results.All(x => x);
-        }
-
-        public override Task ConfigureReportAsync(IReport report, CancellationToken cancellationToken)
-        {
-            return Task.WhenAll(CrashHandlers.Select(x => x.ConfigureReportAsync(report, cancellationToken)));
         }
     }
 }

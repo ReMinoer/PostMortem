@@ -10,17 +10,12 @@ namespace PostMortem.CrashHandlers.Base
     {
         public List<ICrashHandler> CrashHandlers { get; } = new List<ICrashHandler>();
         public bool AlwaysContinue { get; set; }
-
-        public override Task<bool> HandleCrashAsync(ICrashContext crashContext, CancellationToken cancellationToken)
-            => HandleCrashAsync(x => x.HandleCrashAsync(crashContext, cancellationToken));
-        public override Task<bool> HandleCrashAndConfigureReportAsync(ICrashContext crashContext, IReport report, CancellationToken cancellationToken)
-            => HandleCrashAsync(x => x.HandleCrashAndConfigureReportAsync(crashContext, report, cancellationToken));
-
-        private async Task<bool> HandleCrashAsync(Func<ICrashHandler, Task<bool>> taskGetter)
+        
+        public override async Task<bool> HandleCrashAsync(ICrashContext crashContext, IReport report, CancellationToken cancellationToken)
         {
             try
             {
-                return await HandleCrashAsync(taskGetter, AlwaysContinue);
+                return await HandleCrashAsync(x => x.HandleCrashAsync(crashContext, report, cancellationToken), AlwaysContinue);
             }
             catch (Exception)
             {

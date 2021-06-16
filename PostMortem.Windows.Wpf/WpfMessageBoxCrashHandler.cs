@@ -26,12 +26,10 @@ namespace PostMortem.Windows.Wpf
             ExpectedResult = MessageBoxResult.Yes
         };
         
-        public override Task<bool> HandleCrashAsync(ICrashContext crashContext, CancellationToken cancellationToken)
+        public override Task<bool> HandleCrashAsync(ICrashContext crashContext, IReport report, CancellationToken cancellationToken)
         {
             MessageBoxResult result = MessageBox.Show(Message, Caption, Buttons, Icon, DefaultResult, Options);
             return Task.FromResult(result == ExpectedResult);
         }
-
-        public override Task ConfigureReportAsync(IReport report, CancellationToken cancellationToken) => Task.CompletedTask;
     }
 }
