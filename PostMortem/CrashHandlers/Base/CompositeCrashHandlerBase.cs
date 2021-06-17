@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -10,7 +11,21 @@ namespace PostMortem.CrashHandlers.Base
     {
         public List<ICrashHandler> CrashHandlers { get; } = new List<ICrashHandler>();
         public bool AlwaysContinue { get; set; }
-        
+
+        public override bool HandleCrashImmediately(ICrashContext crashContext)
+        {
+            try
+            {
+                return CrashHandlers.All(x => x.HandleCrashImmediately(crashContext));
+            }
+            catch (Exception)
+            {
+                if (AlwaysContinue)
+                    return true;
+                throw;
+            }
+        }
+
         public override async Task<bool> HandleCrashAsync(ICrashContext crashContext, IReport report, CancellationToken cancellationToken)
         {
             try

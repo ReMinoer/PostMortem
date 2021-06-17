@@ -25,11 +25,13 @@ namespace PostMortem.Windows.Wpf
             DefaultResult = MessageBoxResult.No,
             ExpectedResult = MessageBoxResult.Yes
         };
-        
-        public override Task<bool> HandleCrashAsync(ICrashContext crashContext, IReport report, CancellationToken cancellationToken)
+
+        public override bool HandleCrashImmediately(ICrashContext crashContext)
         {
             MessageBoxResult result = MessageBox.Show(Message, Caption, Buttons, Icon, DefaultResult, Options);
-            return Task.FromResult(result == ExpectedResult);
+            return result == ExpectedResult;
         }
+
+        public override Task<bool> HandleCrashAsync(ICrashContext crashContext, IReport report, CancellationToken cancellationToken) => Task.FromResult(true);
     }
 }

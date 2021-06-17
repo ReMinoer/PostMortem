@@ -14,14 +14,16 @@ namespace PostMortem.Logging
             _logger = logger;
         }
 
-        public override Task<bool> HandleCrashAsync(ICrashContext crashContext, IReport report, CancellationToken cancellationToken)
+        public override bool HandleCrashImmediately(ICrashContext crashContext)
         {
             if (crashContext.Unhandled)
                 _logger.LogCritical(crashContext.Exception, string.Empty);
             else
                 _logger.LogError(crashContext.Exception, string.Empty);
 
-            return Task.FromResult(true);
+            return true;
         }
+
+        public override Task<bool> HandleCrashAsync(ICrashContext crashContext, IReport report, CancellationToken cancellationToken) => Task.FromResult(true);
     }
 }

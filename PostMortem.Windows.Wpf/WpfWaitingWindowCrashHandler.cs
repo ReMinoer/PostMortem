@@ -20,6 +20,8 @@ namespace PostMortem.Windows.Wpf
         public string Caption { get; set; }
         public Uri IconUri { get; set; }
 
+        public override bool HandleCrashImmediately(ICrashContext crashContext) => true;
+
         public override Task<bool> HandleCrashAsync(ICrashContext crashContext, IReport report, CancellationToken cancellationToken)
         {
             report.Reported += OnReported;

@@ -19,6 +19,8 @@ namespace PostMortem.CrashHandlers
             FilePath = filePath;
         }
 
+        public override bool HandleCrashImmediately(ICrashContext crashContext) => true;
+
         public override async Task<bool> HandleCrashAsync(ICrashContext crashContext, IReport report, CancellationToken cancellationToken)
         {
             await report.AddFilePartAsync(FilePath, PartId, DeleteFile, cancellationToken);

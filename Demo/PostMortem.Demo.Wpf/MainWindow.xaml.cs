@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows;
 using Microsoft.Extensions.Logging;
 using PostMortem.CrashHandlers;
@@ -40,21 +41,66 @@ namespace PostMortem.Demo.Wpf
             InitializeComponent();
         }
 
-        private async void OnTriggerHandledException(object sender, RoutedEventArgs e)
+        private void OnTriggerHandledException(object sender, RoutedEventArgs e)
         {
             try
             {
-                throw new DemoException("An exception was triggered by user on main thread.");
+                throw new DemoException();
             }
             catch (Exception exception)
             {
-                await Crash.HandleAsync(nameof(PostMortem), exception, _crashHandler, _report, CancellationToken.None);
+                Crash.Handle(nameof(PostMortem), exception, _crashHandler, _report, CancellationToken.None);
             }
+        }
+
+        private void OnTriggerHandledExceptionOnAnotherThread(object sender, RoutedEventArgs e)
+        {
+            new Thread(() =>
+            {
+                try
+                {
+                    throw new DemoException();
+                }
+                catch (Exception exception)
+                {
+                    Crash.Handle(nameof(PostMortem), exception, _crashHandler, _report, CancellationToken.None);
+                }
+            }).Start();
+        }
+
+        private async void OnTriggerHandledExceptionFromTask(object sender, RoutedEventArgs e)
+        {
+            await Task.Run(async () =>
+            {
+                try
+                {
+                    await Task.Delay(100);
+                    throw new DemoException();
+                }
+                catch (Exception exception)
+                {
+                    Crash.Handle(nameof(PostMortem), exception, _crashHandler, _report, CancellationToken.None);
+                }
+            });
         }
 
         private void OnTriggerUnhandledException(object sender, RoutedEventArgs e)
         {
-            throw new DemoException("An unhandled exception was triggered by user on main thread.");
+            throw new DemoException();
+        }
+
+        private void OnTriggerUnhandledExceptionOnAnotherThread(object sender, RoutedEventArgs e)
+        {
+            new Thread(() => throw new DemoException()).Start();
+        }
+
+        private async void OnTriggerUnhandledExceptionFromTask(object sender, RoutedEventArgs e)
+        {
+            await Task.Run(async () =>
+            {
+                await Task.Delay(100);
+                throw new DemoException();
+            });
         }
     }
 }

@@ -10,17 +10,22 @@ namespace PostMortem.CrashHandlers.Base
         public string SuggestedFileName { get; private set; }
         public CrashPathProvider PathProvider { get; } = new CrashPathProvider();
 
-        public override sealed async Task<bool> HandleCrashAsync(ICrashContext crashContext, IReport report, CancellationToken cancellationToken)
+        public override bool HandleCrashImmediately(ICrashContext crashContext)
         {
             if (!PathProvider.HasName)
                 PathProvider.Name = GetDefaultFileName(crashContext);
 
             SuggestedFileName = PathProvider.GetName(crashContext);
-            await CreatePartAsync(PathProvider, crashContext, report, cancellationToken);
+            return true;
+        }
+
+        public override sealed async Task<bool> HandleCrashAsync(ICrashContext crashContext, IReport report, CancellationToken cancellationToken)
+        {
+            await CreatePartAsync(crashContext, report, cancellationToken);
             return true;
         }
 
         protected abstract string GetDefaultFileName(ICrashContext crashContext);
-        protected abstract Task CreatePartAsync(CrashPathProvider pathProvider, ICrashContext crashContext, IReport report, CancellationToken cancellationToken);
+        protected abstract Task CreatePartAsync(ICrashContext crashContext, IReport report, CancellationToken cancellationToken);
     }
 }

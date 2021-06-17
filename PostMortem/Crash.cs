@@ -18,36 +18,48 @@ namespace PostMortem
             void OnUnhandledException(object sender, UnhandledExceptionEventArgs e)
             {
                 appDomain.UnhandledException -= OnUnhandledException;
-
+                
                 ICrashContext crashContext = CrashContext.FromUnhandledException((Exception)e.ExceptionObject, sourceName);
-                Task.Run(async () => await HandleAsync(crashContext, crashHandler, report, cancellationToken), cancellationToken).Wait(CancellationToken.None);
+                Handle(crashContext, crashHandler, report, cancellationToken);
             }
         }
-        
-        static public async Task HandleAsync(string sourceName, Exception exception, ICrashHandler crashHandler, IReport report, CancellationToken cancellationToken)
+
+        static public void Handle(string sourceName, Exception exception, ICrashHandler crashHandler, IReport report, CancellationToken cancellationToken)
         {
             ICrashContext crashContext = CrashContext.FromException(exception, sourceName);
-            await HandleAsync(crashContext, crashHandler, report, cancellationToken);
+            Handle(crashContext, crashHandler, report, cancellationToken);
         }
 
-        static public async Task HandleAsync(ICrashContext crashContext, ICrashHandler crashHandler, IReport report, CancellationToken cancellationToken)
+        static public void Handle(ICrashContext crashContext, ICrashHandler crashHandler, IReport report, CancellationToken cancellationToken)
         {
             try
             {
-                await report.PrepareAsync(crashContext, cancellationToken);
-
-                if (!await crashHandler.HandleCrashAsync(crashContext, report, cancellationToken))
+                if (!crashHandler.HandleCrashImmediately(crashContext))
                 {
-                    await report.CancelAsync();
+                    Cancel();
                     return;
                 }
 
-                await report.ReportAsync(cancellationToken);
+                Task.Run(async () =>
+                {
+                    await report.PrepareAsync(crashContext, cancellationToken);
+
+                    if (!await crashHandler.HandleCrashAsync(crashContext, report, cancellationToken))
+                    {
+                        Cancel();
+                        return;
+                    }
+
+                    await report.ReportAsync(cancellationToken);
+
+                }, cancellationToken).Wait(cancellationToken);
             }
             catch (OperationCanceledException)
             {
-                await report.CancelAsync();
+                Cancel();
             }
+
+            void Cancel() => Task.Run(async () => await report.CancelAsync(), CancellationToken.None).Wait(CancellationToken.None);
         }
     }
 }

@@ -17,6 +17,8 @@ namespace PostMortem.Windows.Forms
         public string Caption { get; set; }
         public string IconPath { get; set; }
 
+        public override bool HandleCrashImmediately(ICrashContext crashContext) => true;
+
         public override Task<bool> HandleCrashAsync(ICrashContext crashContext, IReport report, CancellationToken cancellationToken)
         {
             report.Reported += OnReported;

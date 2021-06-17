@@ -25,6 +25,8 @@ namespace PostMortem.Windows.Screenshots
             };
         }
 
+        public override bool HandleCrashImmediately(ICrashContext crashContext) => true;
+
         public override async Task<bool> HandleCrashAsync(ICrashContext crashContext, IReport report, CancellationToken cancellationToken)
         {
             await Task.WhenAll(Screen.AllScreens.Select(async (screen, index) =>

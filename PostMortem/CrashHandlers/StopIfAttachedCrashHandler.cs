@@ -7,9 +7,11 @@ namespace PostMortem.CrashHandlers
 {
     public class StopIfAttachedCrashHandler : CrashHandlerBase
     {
-        public override Task<bool> HandleCrashAsync(ICrashContext crashContext, IReport report, CancellationToken cancellationToken)
+        public override bool HandleCrashImmediately(ICrashContext crashContext)
         {
-            return Task.FromResult(!(crashContext.Unhandled && Debugger.IsAttached));
+            return !(crashContext.Unhandled && Debugger.IsAttached);
         }
+
+        public override Task<bool> HandleCrashAsync(ICrashContext crashContext, IReport report, CancellationToken cancellationToken) => Task.FromResult(true);
     }
 }

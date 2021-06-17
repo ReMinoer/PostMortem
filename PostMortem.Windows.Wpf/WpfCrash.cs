@@ -1,5 +1,4 @@
 ﻿using System.Threading;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Threading;
 
@@ -19,9 +18,9 @@ namespace PostMortem.Windows.Wpf
             void OnUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
             {
                 application.DispatcherUnhandledException -= OnUnhandledException;
-
+                
                 CrashContext crashContext = CrashContext.FromUnhandledException(e.Exception, sourceName);
-                Task.Run(async () => await Crash.HandleAsync(crashContext, crashHandler, report, cancellationToken), cancellationToken).Wait(CancellationToken.None);
+                Crash.Handle(crashContext, crashHandler, report, cancellationToken);
             }
         }
 
@@ -32,9 +31,9 @@ namespace PostMortem.Windows.Wpf
             void OnUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
             {
                 dispatcher.UnhandledException -= OnUnhandledException;
-
+                
                 CrashContext crashContext = CrashContext.FromUnhandledException(e.Exception, sourceName);
-                Task.Run(async () => await Crash.HandleAsync(crashContext, crashHandler, report, cancellationToken), cancellationToken).Wait(CancellationToken.None);
+                Crash.Handle(crashContext, crashHandler, report, cancellationToken);
             }
         }
     }

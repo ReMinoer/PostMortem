@@ -1,6 +1,5 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
-using PostMortem.Utils;
 
 namespace PostMortem.CrashHandlers.Base
 {
@@ -9,9 +8,17 @@ namespace PostMortem.CrashHandlers.Base
         public string FilePath { get; private set; }
         protected abstract bool RemoveFile { get; }
 
-        protected override sealed async Task CreatePartAsync(CrashPathProvider pathProvider, ICrashContext crashContext, IReport report, CancellationToken cancellationToken)
+        public override bool HandleCrashImmediately(ICrashContext crashContext)
         {
-            FilePath = pathProvider.GetPath(crashContext);
+            if (!base.HandleCrashImmediately(crashContext))
+                return false;
+
+            FilePath = PathProvider.GetPath(crashContext);
+            return true;
+        }
+
+        protected override sealed async Task CreatePartAsync(ICrashContext crashContext, IReport report, CancellationToken cancellationToken)
+        {
             await WriteFileAsync(FilePath, crashContext, cancellationToken);
             await report.AddFilePartAsync(FilePath, PartId, RemoveFile, cancellationToken);
         }

@@ -25,11 +25,13 @@ namespace PostMortem.Windows.Forms
             DefaultResult = MessageBoxDefaultButton.Button2,
             ExpectedResult = DialogResult.Yes
         };
-        
-        public override Task<bool> HandleCrashAsync(ICrashContext crashContext, IReport report, CancellationToken cancellationToken)
+
+        public override bool HandleCrashImmediately(ICrashContext crashContext)
         {
             DialogResult result = MessageBox.Show(Text, Caption, Buttons, Icon, DefaultResult, Options);
-            return Task.FromResult(result == ExpectedResult);
+            return result == ExpectedResult;
         }
+
+        public override Task<bool> HandleCrashAsync(ICrashContext crashContext, IReport report, CancellationToken cancellationToken) => Task.FromResult(true);
     }
 }

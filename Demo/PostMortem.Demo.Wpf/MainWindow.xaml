@@ -12,7 +12,23 @@
         </Style>
     </Window.Resources>
     <StackPanel Orientation="Vertical">
-        <Button Content="Trigger Handled Exception" Click="OnTriggerHandledException" />
-        <Button Content="Trigger Unhandled Exception" Click="OnTriggerUnhandledException" />
+        <Button Click="OnTriggerHandledException">
+            <TextBlock>Trigger <Bold Foreground="Green">Handled</Bold> Exception</TextBlock>
+        </Button>
+        <Button Click="OnTriggerHandledExceptionOnAnotherThread">
+            <TextBlock>Trigger <Bold Foreground="Green">Handled</Bold> Exception On <Bold Foreground="RoyalBlue">Another Thread</Bold></TextBlock>
+        </Button>
+        <Button Click="OnTriggerHandledExceptionFromTask">
+            <TextBlock>Trigger <Bold Foreground="Green">Handled</Bold> Exception From <Bold Foreground="Purple">Task</Bold></TextBlock>
+        </Button>
+        <Button Click="OnTriggerUnhandledException">
+            <TextBlock>Trigger <Bold Foreground="Red">Unhandled</Bold> Exception</TextBlock>
+        </Button>
+        <Button Click="OnTriggerUnhandledExceptionOnAnotherThread">
+            <TextBlock>Trigger <Bold Foreground="Red">Unhandled</Bold> Exception On <Bold Foreground="RoyalBlue">Another Thread</Bold></TextBlock>
+        </Button>
+        <Button Click="OnTriggerUnhandledExceptionFromTask">
+            <TextBlock>Trigger <Bold Foreground="Red">Unhandled</Bold> Exception From <Bold Foreground="Purple">Task</Bold></TextBlock>
+        </Button>
     </StackPanel>
 </Window>
