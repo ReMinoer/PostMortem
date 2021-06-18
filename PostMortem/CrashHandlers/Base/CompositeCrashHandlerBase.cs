@@ -28,9 +28,15 @@ namespace PostMortem.CrashHandlers.Base
 
         public override async Task<bool> HandleCrashAsync(ICrashContext crashContext, IReport report, CancellationToken cancellationToken)
         {
+            cancellationToken.ThrowIfCancellationRequested();
+
             try
             {
                 return await HandleCrashAsync(x => x.HandleCrashAsync(crashContext, report, cancellationToken), AlwaysContinue);
+            }
+            catch (OperationCanceledException)
+            {
+                throw;
             }
             catch (Exception)
             {

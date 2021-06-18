@@ -2,49 +2,23 @@
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using PostMortem.CrashHandlers.Base;
+using PostMortem.Windows.Base;
+using PostMortem.Windows.Utils;
 
 namespace PostMortem.Windows.Forms
 {
-    public class WinFormsWaitingWindowCrashHandler : CrashHandlerBase
+    public class WinFormsWaitingWindowCrashHandler : WaitingWindowCrashHandlerBase
     {
         private Form _window;
-
-        public string Message { get; set; }
-        public string Caption { get; set; }
         public string IconPath { get; set; }
 
-        public override bool HandleCrashImmediately(ICrashContext crashContext) => true;
-
-        public override Task<bool> HandleCrashAsync(ICrashContext crashContext, IReport report, CancellationToken cancellationToken)
-        {
-            report.Reported += OnReported;
-
-            void OnReported(object sender, EventArgs args)
-            {
-                report.Reported -= OnReported;
-
-                _window.Closing -= PreventClosing;
-                _window.Close();
-            };
-
-            var thread = new Thread(ShowWindow);
-            thread.SetApartmentState(ApartmentState.STA);
-            thread.Priority = ThreadPriority.Highest;
-            thread.IsBackground = true;
-            thread.Start(crashContext);
-
-            return Task.FromResult(true);
-        }
-
-        private void ShowWindow(object args)
+        protected override void ShowWindow(ICrashContext crashContext, TaskCompletionSource<bool> readyTaskSource)
         {
             IntPtr mainWindowHandle = Process.GetCurrentProcess().MainWindowHandle;
-            ICrashContext crashContext = (CrashContext)args;
 
+            Button cancelButton;
             _window = new Form
             {
                 Text = Caption ?? crashContext.SourceName,
@@ -77,12 +51,25 @@ namespace PostMortem.Windows.Forms
                                 Margin = new Padding(10, 0, 10, 10),
                                 Dock = DockStyle.Bottom,
                                 AutoSize = true
-                            }
+                            },
+                            (cancelButton = new Button
+                            {
+                                Text = CancelButtonText ?? "Cancel",
+                                Visible = IsCancellable,
+                                Margin = new Padding(10, 0, 10, 10),
+                                Dock = DockStyle.Right
+                            })
                         }
                     }
                 }
             };
-            
+
+            cancelButton.Click += (s, e) =>
+            {
+                cancelButton.Enabled = false;
+                crashContext.Cancel();
+            };
+
             Application.EnableVisualStyles();
 
             _window.Closing += PreventClosing;
@@ -90,8 +77,20 @@ namespace PostMortem.Windows.Forms
 
             if (mainWindowHandle != IntPtr.Zero)
                 NativeMethodHelpers.SetOwnerWindow(_window.Handle, mainWindowHandle);
-            
+
+            readyTaskSource.SetResult(true);
             Application.Run();
+        }
+
+        protected override void CloseWindow()
+        {
+            if (_window == null)
+                return;
+
+            _window.Closing -= PreventClosing;
+            _window.Close();
+            _window.Dispose();
+            _window = null;
         }
 
         private void PreventClosing(object sender, CancelEventArgs args)

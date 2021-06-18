@@ -34,8 +34,12 @@ namespace PostMortem.CrashHandlers
 
         public override async Task<bool> HandleCrashAsync(ICrashContext crashContext, IReport report, CancellationToken cancellationToken)
         {
+            cancellationToken.ThrowIfCancellationRequested();
+
             await Task.WhenAll(Directory.GetFiles(FolderPath, FileNamePattern).Select(x => report.AddFilePartAsync(x, PartId, DeleteFiles, cancellationToken)));
             return true;
         }
+
+        public override Task CleanAfterCancelAsync() => Task.CompletedTask;
     }
 }

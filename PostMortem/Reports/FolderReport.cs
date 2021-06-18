@@ -24,6 +24,8 @@ namespace PostMortem.Reports
 
         public Task PrepareAsync(ICrashContext crashContext, CancellationToken cancellationToken)
         {
+            cancellationToken.ThrowIfCancellationRequested();
+
             FolderPath = FolderPathProvider.GetPath(crashContext);
 
             if (!Directory.Exists(FolderPath))
@@ -34,14 +36,16 @@ namespace PostMortem.Reports
 
         public Task ReportAsync(CancellationToken cancellationToken)
         {
+            cancellationToken.ThrowIfCancellationRequested();
+
             Reported?.Invoke(this, EventArgs.Empty);
             return Task.CompletedTask;
         }
 
-        public Task CancelAsync()
+        public Task CleanAfterCancelAsync()
         {
             if (!string.IsNullOrEmpty(FolderPath) && Directory.Exists(FolderPath))
-                Directory.Delete(FolderPath);
+                Directory.Delete(FolderPath, recursive: true);
 
             Cancelled?.Invoke(this, EventArgs.Empty);
             return Task.CompletedTask;
@@ -70,6 +74,8 @@ namespace PostMortem.Reports
 
         public Task<IReportPart> CreatePartAsync(string suggestedFileName, object partId, CancellationToken cancellationToken)
         {
+            cancellationToken.ThrowIfCancellationRequested();
+
             FileStream fileStream = File.Create(Path.Combine(FolderPath, suggestedFileName));
             IReportPart reportPart = new ReportPart(fileStream);
 

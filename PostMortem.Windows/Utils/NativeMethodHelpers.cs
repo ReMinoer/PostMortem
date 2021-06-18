@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 
-namespace PostMortem.Windows
+namespace PostMortem.Windows.Utils
 {
     static public class NativeMethodHelpers
     {

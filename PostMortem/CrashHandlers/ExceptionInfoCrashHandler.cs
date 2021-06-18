@@ -13,5 +13,7 @@ namespace PostMortem.CrashHandlers
         {
             return Task.FromResult(crashContext.Exception.ToString());
         }
+
+        public override Task CleanAfterCancelAsync() => Task.CompletedTask;
     }
 }

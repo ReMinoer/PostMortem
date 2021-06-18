@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -13,7 +14,7 @@ namespace PostMortem.Windows
         public string ProcessName { get; set; }
         public ProcessDumpType DumpType { get; set; } = ProcessDumpType.Mini;
 
-        protected override bool RemoveFile => true;
+        protected override bool RemoveReportedFile => true;
 
         public WindowsProcessDumpCrashHandler()
         {

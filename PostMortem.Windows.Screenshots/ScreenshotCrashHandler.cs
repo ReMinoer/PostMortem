@@ -32,30 +32,25 @@ namespace PostMortem.Windows.Screenshots
             await Task.WhenAll(Screen.AllScreens.Select(async (screen, index) =>
             {
                 var suggestedFileName = PathProvider.GetName(crashContext, index.ToString());
-                try
-                {
-                    int x = (int)screen.Bounds.X;
-                    int y = (int)screen.Bounds.Y;
-                    int width = (int)screen.Bounds.Width;
-                    int height = (int)screen.Bounds.Height;
 
-                    using (Bitmap bitmap = new Bitmap(width, height))
-                    {
-                        using (Graphics graphics = Graphics.FromImage(bitmap))
-                            graphics.CopyFromScreen(x, y, 0, 0, new Size(width, height));
-                        
-                        using (IReportPart reportPart = await report.CreatePartAsync(suggestedFileName, PartId, cancellationToken))
-                            bitmap.Save(reportPart.Stream, ImageFormat);
-                    }
-                }
-                catch (Exception)
-                {
-                    (await report.CreatePartAsync(suggestedFileName, PartId, cancellationToken)).Dispose();
-                }
+                int x = (int)screen.Bounds.X;
+                int y = (int)screen.Bounds.Y;
+                int width = (int)screen.Bounds.Width;
+                int height = (int)screen.Bounds.Height;
 
+                using (Bitmap bitmap = new Bitmap(width, height))
+                {
+                    using (Graphics graphics = Graphics.FromImage(bitmap))
+                        graphics.CopyFromScreen(x, y, 0, 0, new Size(width, height));
+
+                    using (IReportPart reportPart = await report.CreatePartAsync(suggestedFileName, PartId, cancellationToken))
+                        bitmap.Save(reportPart.Stream, ImageFormat);
+                }
             }));
 
             return true;
         }
+
+        public override Task CleanAfterCancelAsync() => Task.CompletedTask;
     }
 }

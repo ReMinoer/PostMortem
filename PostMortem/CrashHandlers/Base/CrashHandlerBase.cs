@@ -7,5 +7,6 @@ namespace PostMortem.CrashHandlers.Base
     {
         public abstract bool HandleCrashImmediately(ICrashContext crashContext);
         public abstract Task<bool> HandleCrashAsync(ICrashContext crashContext, IReport report, CancellationToken cancellationToken);
+        public abstract Task CleanAfterCancelAsync();
     }
 }

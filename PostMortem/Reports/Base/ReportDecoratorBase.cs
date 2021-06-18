@@ -18,6 +18,6 @@ namespace PostMortem.Reports.Base
         public virtual Task AddBytesPartAsync(byte[] bytes, string suggestedFileName, object partId, CancellationToken cancellationToken) => BaseReport?.AddBytesPartAsync(bytes, suggestedFileName, partId, cancellationToken) ?? Task.CompletedTask;
         public virtual Task<IReportPart> CreatePartAsync(string suggestedFileName, object partId, CancellationToken cancellationToken) => BaseReport?.CreatePartAsync(suggestedFileName, partId, cancellationToken) ?? Task.FromResult<IReportPart>(null);
         public virtual Task ReportAsync(CancellationToken cancellationToken) => BaseReport?.ReportAsync(cancellationToken) ?? Task.CompletedTask;
-        public virtual Task CancelAsync() => BaseReport?.CancelAsync() ?? Task.CompletedTask;
+        public virtual Task CleanAfterCancelAsync() => BaseReport?.CleanAfterCancelAsync() ?? Task.CompletedTask;
     }
 }

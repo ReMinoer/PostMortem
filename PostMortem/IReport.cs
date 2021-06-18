@@ -14,6 +14,6 @@ namespace PostMortem
         Task AddBytesPartAsync(byte[] bytes, string suggestedFileName, object partId, CancellationToken cancellationToken);
         Task<IReportPart> CreatePartAsync(string suggestedFileName, object partId, CancellationToken cancellationToken);
         Task ReportAsync(CancellationToken cancellationToken);
-        Task CancelAsync();
+        Task CleanAfterCancelAsync();
     }
 }

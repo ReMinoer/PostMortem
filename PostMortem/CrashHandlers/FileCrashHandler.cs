@@ -26,5 +26,7 @@ namespace PostMortem.CrashHandlers
             await report.AddFilePartAsync(FilePath, PartId, DeleteFile, cancellationToken);
             return true;
         }
+
+        public override Task CleanAfterCancelAsync() => Task.CompletedTask;
     }
 }

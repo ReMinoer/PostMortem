@@ -34,9 +34,12 @@ namespace PostMortem
         {
             try
             {
+                cancellationToken = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, crashContext.CancellationToken).Token;
+                cancellationToken.ThrowIfCancellationRequested();
+
                 if (!crashHandler.HandleCrashImmediately(crashContext))
                 {
-                    Cancel();
+                    CleanAfterCancel(crashHandler, report);
                     return;
                 }
 
@@ -46,20 +49,38 @@ namespace PostMortem
 
                     if (!await crashHandler.HandleCrashAsync(crashContext, report, cancellationToken))
                     {
-                        Cancel();
+                        CleanAfterCancel(crashHandler, report);
                         return;
                     }
 
                     await report.ReportAsync(cancellationToken);
 
-                }, cancellationToken).Wait(cancellationToken);
+                }, cancellationToken).Wait(CancellationToken.None);
             }
-            catch (OperationCanceledException)
+            catch (AggregateException e)
             {
-                Cancel();
+                foreach (Exception innerException in e.InnerExceptions)
+                {
+                    if (innerException is OperationCanceledException)
+                        CleanAfterCancel(crashHandler, report);
+                    else
+                        throw innerException;
+                }
             }
+            catch (Exception)
+            {
+                CleanAfterCancel(crashHandler, report);
+            }
+        }
 
-            void Cancel() => Task.Run(async () => await report.CancelAsync(), CancellationToken.None).Wait(CancellationToken.None);
+        static private void CleanAfterCancel(ICrashHandler crashHandler, IReport report)
+        {
+            Task.Run(async () =>
+            {
+                await crashHandler.CleanAfterCancelAsync();
+                await report.CleanAfterCancelAsync();
+
+            }).Wait();
         }
     }
 }

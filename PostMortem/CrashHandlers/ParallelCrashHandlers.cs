@@ -12,5 +12,10 @@ namespace PostMortem.CrashHandlers
             bool[] results = await Task.WhenAll(CrashHandlers.Select(taskGetter));
             return alwaysContinue || results.All(x => x);
         }
+
+        public override Task CleanAfterCancelAsync()
+        {
+            return Task.WhenAll(CrashHandlers.Select(x => x.CleanAfterCancelAsync()));
+        }
     }
 }

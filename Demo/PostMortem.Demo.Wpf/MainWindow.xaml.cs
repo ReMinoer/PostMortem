@@ -36,7 +36,7 @@ namespace PostMortem.Demo.Wpf
                 }
             };
             
-            _report = new ShowInExplorerReport<FolderReport>(new FolderReport(), x => x.FolderPath);
+            _report = new ShowInExplorerReport<ZipArchiveReport>(new ZipArchiveReport(), x => x.FilePath);
 
             InitializeComponent();
         }

@@ -41,9 +41,9 @@ namespace PostMortem.Windows
             Reported?.Invoke(this, EventArgs.Empty);
         }
 
-        public override async Task CancelAsync()
+        public override async Task CleanAfterCancelAsync()
         {
-            await base.CancelAsync();
+            await base.CleanAfterCancelAsync();
             Cancelled?.Invoke(this, EventArgs.Empty);
         }
     }

@@ -8,4 +8,8 @@
     <ProjectReference Include="..\PostMortem\PostMortem.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Base\" />
+  </ItemGroup>
+
 </Project>

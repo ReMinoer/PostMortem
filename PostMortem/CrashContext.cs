@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Threading;
 
 namespace PostMortem
 {
@@ -18,12 +19,18 @@ namespace PostMortem
         public DateTime Timestamp { get; set; }
         public bool Unhandled { get; set; }
 
+        private readonly CancellationTokenSource _cancellation;
+        public CancellationToken CancellationToken => _cancellation.Token;
+
         public CrashContext(Exception exception, string sourceName, DateTime timestamp, bool unhandled)
         {
             Exception = exception;
             SourceName = sourceName;
             Timestamp = timestamp;
             Unhandled = unhandled;
+            _cancellation = new CancellationTokenSource();
         }
+
+        public void Cancel() => _cancellation.Cancel();
     }
 }

@@ -8,50 +8,21 @@ using System.Windows.Controls;
 using System.Windows.Interop;
 using System.Windows.Media.Imaging;
 using System.Windows.Threading;
-using PostMortem.CrashHandlers.Base;
+using PostMortem.Windows.Base;
+using PostMortem.Windows.Utils;
 
 namespace PostMortem.Windows.Wpf
 {
-    public class WpfWaitingWindowCrashHandler : CrashHandlerBase
+    public class WpfWaitingWindowCrashHandler : WaitingWindowCrashHandlerBase
     {
         private Window _window;
-
-        public string Message { get; set; }
-        public string Caption { get; set; }
         public Uri IconUri { get; set; }
 
-        public override bool HandleCrashImmediately(ICrashContext crashContext) => true;
-
-        public override Task<bool> HandleCrashAsync(ICrashContext crashContext, IReport report, CancellationToken cancellationToken)
-        {
-            report.Reported += OnReported;
-
-            void OnReported(object sender, EventArgs args)
-            {
-                report.Reported -= OnReported;
-
-                _window.Closing -= PreventClosing;
-
-                if (_window.Dispatcher.CheckAccess())
-                    _window.Close();
-                else
-                    _window.Dispatcher.Invoke(DispatcherPriority.Normal, new ThreadStart(_window.Close));
-            };
-
-            var thread = new Thread(ShowWindow);
-            thread.SetApartmentState(ApartmentState.STA);
-            thread.Priority = ThreadPriority.Highest;
-            thread.IsBackground = true;
-            thread.Start(crashContext);
-
-            return Task.FromResult(true);
-        }
-
-        private void ShowWindow(object args)
+        protected override void ShowWindow(ICrashContext crashContext, TaskCompletionSource<bool> readyTaskSource)
         {
             IntPtr mainWindowHandle = Process.GetCurrentProcess().MainWindowHandle;
-            ICrashContext crashContext = (CrashContext)args;
 
+            Button cancelButton;
             _window = new Window
             {
                 Title = Caption ?? crashContext.SourceName,
@@ -75,18 +46,49 @@ namespace PostMortem.Windows.Wpf
                             IsIndeterminate = true,
                             Height = 24,
                             Margin = new Thickness(10, 0, 10, 10)
-                        }
+                        },
+                        (cancelButton = new Button
+                        {
+                            Content = CancelButtonText ?? "Cancel",
+                            Visibility = IsCancellable ? Visibility.Visible : Visibility.Collapsed,
+                            Height = 24,
+                            HorizontalAlignment = HorizontalAlignment.Right,
+                            Margin = new Thickness(10, 0, 10, 10),
+                            Padding = new Thickness(10, 0, 10, 0)
+                        })
                     }
                 }
             };
-            
+
+            Grid.SetColumn(cancelButton, 1);
+
+            cancelButton.Click += (s, e) =>
+            {
+                cancelButton.IsEnabled = false;
+                crashContext.Cancel();
+            };
+
             _window.Closing += PreventClosing;
             _window.Show();
 
             if (mainWindowHandle != IntPtr.Zero)
                 NativeMethodHelpers.SetOwnerWindow(new WindowInteropHelper(_window).EnsureHandle(), mainWindowHandle);
 
+            readyTaskSource.SetResult(true);
             Dispatcher.Run();
+        }
+
+        protected override void CloseWindow()
+        {
+            if (_window == null)
+                return;
+
+            _window.Closing -= PreventClosing;
+
+            if (_window.Dispatcher.CheckAccess())
+                _window.Close();
+            else
+                _window.Dispatcher.Invoke(DispatcherPriority.Normal, new ThreadStart(_window.Close));
         }
 
         private void PreventClosing(object sender, CancelEventArgs args)

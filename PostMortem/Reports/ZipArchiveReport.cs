@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.IO.Compression;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using PostMortem.Utils;
@@ -28,10 +29,12 @@ namespace PostMortem.Reports
 
         public Task PrepareAsync(ICrashContext crashContext, CancellationToken cancellationToken)
         {
+            cancellationToken.ThrowIfCancellationRequested();
+
             FilePath = PathProvider.GetPath(crashContext);
 
             _fileStream = File.Create(FilePath);
-            _zipArchive = new ZipArchive(_fileStream, ZipArchiveMode.Create);
+            _zipArchive = new ZipArchive(_fileStream, ZipArchiveMode.Update);
 
             return Task.CompletedTask;
         }
@@ -40,7 +43,7 @@ namespace PostMortem.Reports
         {
             using (IReportPart reportPart = await CreatePartAsync(Path.GetFileName(filePath), partId, cancellationToken))
             using (FileStream fileStream = File.OpenRead(filePath))
-                await fileStream.CopyToAsync(reportPart.Stream, 4096, CancellationToken.None);
+                await fileStream.CopyToAsync(reportPart.Stream, 4096, cancellationToken);
 
             if (removeFile)
                 File.Delete(filePath);
@@ -69,15 +72,29 @@ namespace PostMortem.Reports
 
         public Task ReportAsync(CancellationToken cancellationToken)
         {
+            cancellationToken.ThrowIfCancellationRequested();
+
             _zipArchive.Dispose();
+            _zipArchive = null;
+
+            cancellationToken.ThrowIfCancellationRequested();
+
             _fileStream.Dispose();
+            _fileStream = null;
 
             return Task.CompletedTask;
         }
 
-        public Task CancelAsync()
+        public Task CleanAfterCancelAsync()
         {
-            _zipArchive?.Dispose();
+            if (_zipArchive != null)
+            {
+                foreach (ZipArchiveEntry entry in _zipArchive.Entries.ToArray())
+                    entry.Delete();
+
+                _zipArchive.Dispose();
+            }
+
             _fileStream?.Dispose();
 
             if (File.Exists(FilePath))

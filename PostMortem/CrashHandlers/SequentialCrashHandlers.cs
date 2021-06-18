@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using PostMortem.CrashHandlers.Base;
 
@@ -13,6 +14,12 @@ namespace PostMortem.CrashHandlers
                     return false;
 
             return true;
+        }
+
+        public override async Task CleanAfterCancelAsync()
+        {
+            foreach (ICrashHandler crashHandler in Enumerable.Reverse(CrashHandlers))
+                await crashHandler.CleanAfterCancelAsync();
         }
     }
 }

@@ -1,4 +1,6 @@
-﻿using System.Threading;
+﻿using System;
+using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace PostMortem.CrashHandlers.Base
@@ -6,7 +8,7 @@ namespace PostMortem.CrashHandlers.Base
     public abstract class FileCrashHandlerBase : SinglePartCrashHandlerBase
     {
         public string FilePath { get; private set; }
-        protected abstract bool RemoveFile { get; }
+        protected abstract bool RemoveReportedFile { get; }
 
         public override bool HandleCrashImmediately(ICrashContext crashContext)
         {
@@ -19,10 +21,28 @@ namespace PostMortem.CrashHandlers.Base
 
         protected override sealed async Task CreatePartAsync(ICrashContext crashContext, IReport report, CancellationToken cancellationToken)
         {
-            await WriteFileAsync(FilePath, crashContext, cancellationToken);
-            await report.AddFilePartAsync(FilePath, PartId, RemoveFile, cancellationToken);
+            try
+            {
+                await WriteFileAsync(FilePath, crashContext, cancellationToken);
+                await report.AddFilePartAsync(FilePath, PartId, RemoveReportedFile, cancellationToken);
+            }
+            catch (Exception)
+            {
+                if (File.Exists(FilePath))
+                    await Task.Run(() => File.Delete(FilePath));
+
+                throw;
+            }
         }
         
         protected abstract Task WriteFileAsync(string filePath, ICrashContext crashContext, CancellationToken cancellationToken);
+
+        public override Task CleanAfterCancelAsync()
+        {
+            if (File.Exists(FilePath))
+                return Task.Run(() => File.Delete(FilePath));
+
+            return Task.CompletedTask;
+        }
     }
 }

@@ -33,5 +33,6 @@ namespace PostMortem.Windows.Wpf
         }
 
         public override Task<bool> HandleCrashAsync(ICrashContext crashContext, IReport report, CancellationToken cancellationToken) => Task.FromResult(true);
+        public override Task CleanAfterCancelAsync() => Task.CompletedTask;
     }
 }
