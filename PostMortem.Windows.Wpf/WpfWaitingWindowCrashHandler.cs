@@ -2,7 +2,6 @@
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Interop;
@@ -18,7 +17,7 @@ namespace PostMortem.Windows.Wpf
         private Window _window;
         public Uri IconUri { get; set; }
 
-        protected override void ShowWindow(ICrashContext crashContext, TaskCompletionSource<bool> readyTaskSource)
+        protected override void ShowWindow(ICrashContext crashContext, EventWaitHandle readyEvent)
         {
             IntPtr mainWindowHandle = Process.GetCurrentProcess().MainWindowHandle;
 
@@ -74,7 +73,7 @@ namespace PostMortem.Windows.Wpf
             if (mainWindowHandle != IntPtr.Zero)
                 NativeMethodHelpers.SetOwnerWindow(new WindowInteropHelper(_window).EnsureHandle(), mainWindowHandle);
 
-            readyTaskSource.SetResult(true);
+            readyEvent.Set();
             Dispatcher.Run();
         }
 

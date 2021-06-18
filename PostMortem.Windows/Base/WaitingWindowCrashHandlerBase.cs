@@ -12,7 +12,20 @@ namespace PostMortem.Windows.Base
         public bool IsCancellable { get; set; } = true;
         public string CancelButtonText { get; set; }
 
-        public override bool HandleCrashImmediately(ICrashContext crashContext) => true;
+        public override bool HandleCrashImmediately(ICrashContext crashContext)
+        {
+            using (EventWaitHandle readyEvent = new ManualResetEvent(false))
+            {
+                var thread = new Thread(ShowWindow);
+                thread.SetApartmentState(ApartmentState.STA);
+                thread.IsBackground = true;
+                thread.Start((crashContext, readyEvent));
+
+                readyEvent.WaitOne();
+            }
+
+            return true;
+        }
 
         public override Task<bool> HandleCrashAsync(ICrashContext crashContext, IReport report, CancellationToken cancellationToken)
         {
@@ -28,15 +41,7 @@ namespace PostMortem.Windows.Base
                 CloseWindow();
             }
 
-            var readyTaskSource = new TaskCompletionSource<bool>();
-
-            var thread = new Thread(ShowWindow);
-            thread.SetApartmentState(ApartmentState.STA);
-            thread.Priority = ThreadPriority.Highest;
-            thread.IsBackground = true;
-            thread.Start((crashContext, readyTaskSource));
-
-            return readyTaskSource.Task;
+            return Task.FromResult(true);
         }
 
         public override Task CleanAfterCancelAsync()
@@ -47,11 +52,11 @@ namespace PostMortem.Windows.Base
 
         private void ShowWindow(object args)
         {
-            (ICrashContext crashContext, TaskCompletionSource<bool> readyTaskSource) = ((ICrashContext, TaskCompletionSource<bool>))args;
-            ShowWindow(crashContext, readyTaskSource);
+            (ICrashContext crashContext, EventWaitHandle readyEvent) = ((ICrashContext, EventWaitHandle))args;
+            ShowWindow(crashContext, readyEvent);
         }
 
-        protected abstract void ShowWindow(ICrashContext crashContext, TaskCompletionSource<bool> readyTaskSource);
+        protected abstract void ShowWindow(ICrashContext crashContext, EventWaitHandle readyEvent);
         protected abstract void CloseWindow();
     }
 }

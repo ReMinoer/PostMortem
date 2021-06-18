@@ -2,7 +2,7 @@
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
-using System.Threading.Tasks;
+using System.Threading;
 using System.Windows.Forms;
 using PostMortem.Windows.Base;
 using PostMortem.Windows.Utils;
@@ -14,7 +14,7 @@ namespace PostMortem.Windows.Forms
         private Form _window;
         public string IconPath { get; set; }
 
-        protected override void ShowWindow(ICrashContext crashContext, TaskCompletionSource<bool> readyTaskSource)
+        protected override void ShowWindow(ICrashContext crashContext, EventWaitHandle readyEvent)
         {
             IntPtr mainWindowHandle = Process.GetCurrentProcess().MainWindowHandle;
 
@@ -78,7 +78,7 @@ namespace PostMortem.Windows.Forms
             if (mainWindowHandle != IntPtr.Zero)
                 NativeMethodHelpers.SetOwnerWindow(_window.Handle, mainWindowHandle);
 
-            readyTaskSource.SetResult(true);
+            readyEvent.Set();
             Application.Run();
         }
 
